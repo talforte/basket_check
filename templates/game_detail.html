@@ -1,0 +1,368 @@
+{% extends "base.html" %}
+
+{% block title %}{{ game.title }} - Basket Check{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/game_detail.css') }}">
+
+<div class="row">
+    <div class="col-12">
+        <!-- Back Button -->
+        <div class="mb-3">
+            <a href="{{ url_for('games_list') }}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-right me-2"></i>חזור לרשימת המשחקים
+            </a>
+        </div>
+        
+        <!-- Game Header -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-8">
+                        <h1 class="card-title display-6 fw-bold text-primary mb-3">
+                            <i class="fas fa-basketball-ball text-warning me-3"></i>
+                            {{ game.title }}
+                        </h1>
+                        
+                        <div class="row g-3">
+                            <div class="col-sm-6">
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-calendar text-primary me-3 fs-5"></i>
+                                    <div>
+                                        <small class="text-muted d-block">תאריך</small>
+                                        <strong>{{ game.game_date|datetime }}</strong>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-sm-6">
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-clock text-warning me-3 fs-5"></i>
+                                    <div>
+                                        <small class="text-muted d-block">שעה</small>
+                                        <strong>{{ game.game_time|time }}</strong>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-sm-6">
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-map-marker-alt text-danger me-3 fs-5"></i>
+                                    <div>
+                                        <small class="text-muted d-block">מיקום</small>
+                                        <strong>{{ game.location }}</strong>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-sm-6">
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-user text-info me-3 fs-5"></i>
+                                    <div>
+                                        <small class="text-muted d-block">מארגן</small>
+                                        <strong>{{ game.first_name }} {{ game.last_name }}</strong>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        {% if game.description %}
+                            <div class="mt-3">
+                                <h6 class="text-muted">תיאור המשחק</h6>
+                                <p class="mb-0">{{ game.description }}</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <div class="text-center">
+                            <div class="stats-card mb-3">
+                                <div class="stats-number">{{ registrations|length }}/10</div>
+                                <div>משתתפים נרשמו</div>
+                            </div>
+                            
+                            {% set available_spots = 10 - registrations|length %}
+                            
+                            <div class="stats-card {% if available_spots > 0 %}bg-success{% else %}bg-danger{% endif %}" style="background: linear-gradient(135deg, {% if available_spots > 0 %}#4CAF50 0%, #45a049 100%{% else %}#f44336 0%, #d32f2f 100%{% endif %});">
+                                <div class="stats-number">{{ available_spots }}</div>
+                                <div>מקומות פנויים</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Basketball Court Visualization -->
+    <div class="col-lg-8 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-diagram-project me-2"></i>
+                    מפת המגרש - 5 נגד 5
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="basketball-court-container">
+                    <div class="basketball-court" id="basketballCourt">
+                        <!-- Court Lines -->
+                        <div class="court-center-line"></div>
+                        <div class="court-center-circle"></div>
+                        <div class="court-three-point-left"></div>
+                        <div class="court-three-point-right"></div>
+                        <div class="court-basket-left"></div>
+                        <div class="court-basket-right"></div>
+                        
+                        <!-- Team A (Red) - Left Side -->
+                        <div class="position-spot team-a {% if registrations_by_position.get('Team A - Point Guard') %}taken{% else %}available{% endif %}" 
+                             data-position="Team A - Point Guard" data-title="Team A - Point Guard" style="top: 50%; left: 25%;">
+                            PG
+                            {% if registrations_by_position.get('Team A - Point Guard') %}
+                                <div class="position-tooltip">{{ registrations_by_position['Team A - Point Guard'][0].first_name }}</div>
+                            {% else %}
+                                <div class="position-tooltip">פנוי</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="position-spot team-a {% if registrations_by_position.get('Team A - Shooting Guard') %}taken{% else %}available{% endif %}" 
+                             data-position="Team A - Shooting Guard" data-title="Team A - Shooting Guard" style="top: 30%; left: 35%;">
+                            SG
+                            {% if registrations_by_position.get('Team A - Shooting Guard') %}
+                                <div class="position-tooltip">{{ registrations_by_position['Team A - Shooting Guard'][0].first_name }}</div>
+                            {% else %}
+                                <div class="position-tooltip">פנוי</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="position-spot team-a {% if registrations_by_position.get('Team A - Small Forward') %}taken{% else %}available{% endif %}" 
+                             data-position="Team A - Small Forward" data-title="Team A - Small Forward" style="top: 70%; left: 35%;">
+                            SF
+                            {% if registrations_by_position.get('Team A - Small Forward') %}
+                                <div class="position-tooltip">{{ registrations_by_position['Team A - Small Forward'][0].first_name }}</div>
+                            {% else %}
+                                <div class="position-tooltip">פנוי</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="position-spot team-a {% if registrations_by_position.get('Team A - Power Forward') %}taken{% else %}available{% endif %}" 
+                             data-position="Team A - Power Forward" data-title="Team A - Power Forward" style="top: 20%; left: 15%;">
+                            PF
+                            {% if registrations_by_position.get('Team A - Power Forward') %}
+                                <div class="position-tooltip">{{ registrations_by_position['Team A - Power Forward'][0].first_name }}</div>
+                            {% else %}
+                                <div class="position-tooltip">פנוי</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="position-spot team-a {% if registrations_by_position.get('Team A - Center') %}taken{% else %}available{% endif %}" 
+                             data-position="Team A - Center" data-title="Team A - Center" style="top: 80%; left: 15%;">
+                            C
+                            {% if registrations_by_position.get('Team A - Center') %}
+                                <div class="position-tooltip">{{ registrations_by_position['Team A - Center'][0].first_name }}</div>
+                            {% else %}
+                                <div class="position-tooltip">פנוי</div>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Team B (Teal) - Right Side -->
+                        <div class="position-spot team-b {% if registrations_by_position.get('Team B - Point Guard') %}taken{% else %}available{% endif %}" 
+                             data-position="Team B - Point Guard" data-title="Team B - Point Guard" style="top: 50%; left: 75%;">
+                            PG
+                            {% if registrations_by_position.get('Team B - Point Guard') %}
+                                <div class="position-tooltip">{{ registrations_by_position['Team B - Point Guard'][0].first_name }}</div>
+                            {% else %}
+                                <div class="position-tooltip">פנוי</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="position-spot team-b {% if registrations_by_position.get('Team B - Shooting Guard') %}taken{% else %}available{% endif %}" 
+                             data-position="Team B - Shooting Guard" data-title="Team B - Shooting Guard" style="top: 30%; left: 65%;">
+                            SG
+                            {% if registrations_by_position.get('Team B - Shooting Guard') %}
+                                <div class="position-tooltip">{{ registrations_by_position['Team B - Shooting Guard'][0].first_name }}</div>
+                            {% else %}
+                                <div class="position-tooltip">פנוי</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="position-spot team-b {% if registrations_by_position.get('Team B - Small Forward') %}taken{% else %}available{% endif %}" 
+                             data-position="Team B - Small Forward" data-title="Team B - Small Forward" style="top: 70%; left: 65%;">
+                            SF
+                            {% if registrations_by_position.get('Team B - Small Forward') %}
+                                <div class="position-tooltip">{{ registrations_by_position['Team B - Small Forward'][0].first_name }}</div>
+                            {% else %}
+                                <div class="position-tooltip">פנוי</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="position-spot team-b {% if registrations_by_position.get('Team B - Power Forward') %}taken{% else %}available{% endif %}" 
+                             data-position="Team B - Power Forward" data-title="Team B - Power Forward" style="top: 20%; left: 85%;">
+                            PF
+                            {% if registrations_by_position.get('Team B - Power Forward') %}
+                                <div class="position-tooltip">{{ registrations_by_position['Team B - Power Forward'][0].first_name }}</div>
+                            {% else %}
+                                <div class="position-tooltip">פנוי</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="position-spot team-b {% if registrations_by_position.get('Team B - Center') %}taken{% else %}available{% endif %}" 
+                             data-position="Team B - Center" data-title="Team B - Center" style="top: 80%; left: 85%;">
+                            C
+                            {% if registrations_by_position.get('Team B - Center') %}
+                                <div class="position-tooltip">{{ registrations_by_position['Team B - Center'][0].first_name }}</div>
+                            {% else %}
+                                <div class="position-tooltip">פנוי</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Team Legend -->
+                <div class="team-legend">
+                    <div class="team-legend-item">
+                        <div class="legend-circle team-a"></div>
+                        <span><strong>Team A</strong></span>
+                    </div>
+                    <div class="team-legend-item">
+                        <div class="legend-circle team-b"></div>
+                        <span><strong>Team B</strong></span>
+                    </div>
+                    <div class="team-legend-item">
+                        <span class="badge bg-success me-2">
+                            <i class="fas fa-circle"></i>
+                        </span>
+                        פנוי
+                    </div>
+                    <div class="team-legend-item">
+                        <span class="badge bg-danger me-2">
+                            <i class="fas fa-circle"></i>
+                        </span>
+                        תפוס
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Registration Panel -->
+    <div class="col-lg-4 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-clipboard-list me-2"></i>
+                    הרשמה למשחק
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if current_user.is_logged_in %}
+                    {% if user_registered %}
+                        <div class="alert alert-success">
+                            <i class="fas fa-check-circle me-2"></i>
+                            <strong>כבר נרשמת למשחק זה!</strong>
+                        </div>
+                        <form method="POST" action="{{ url_for('cancel_game_registration', game_id=game.game_id) }}">
+                            <button type="submit" class="btn btn-danger w-100" onclick="return confirm('האם אתה בטוח שברצונך לבטל את ההרשמה?')">
+                                <i class="fas fa-times me-2"></i>בטל הרשמה
+                            </button>
+                        </form>
+                    {% else %}
+                        {% if available_spots > 0 %}
+                            <form method="POST" action="{{ url_for('register_to_game', game_id=game.game_id) }}" id="registrationForm">
+                                <div class="mb-3">
+                                    <label for="position_id" class="form-label">בחר תפקיד:</label>
+                                    <select class="form-select" id="position_id" name="position_id" required>
+                                        <option value="">-- בחר תפקיד --</option>
+                                        {% for position in positions %}
+                                            {% set position_taken = registrations_by_position.get(position.position_name, [])|length >= position.max_per_game %}
+                                            
+                                            <option value="{{ position.position_id }}" {% if position_taken %}disabled{% endif %}>
+                                                {{ position.position_name }}
+                                                {% if position.description %} - {{ position.description }}{% endif %}
+                                                {% if position_taken %} - תפוס{% endif %}
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <button type="submit" class="btn btn-success w-100">
+                                    <i class="fas fa-plus me-2"></i>הירשם למשחק
+                                </button>
+                            </form>
+                        {% else %}
+                            <div class="alert alert-warning">
+                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                <strong>המשחק מלא (10/10 שחקנים)</strong>
+                            </div>
+                        {% endif %}
+                    {% endif %}
+                {% else %}
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        יש להתחבר כדי להירשם למשחק
+                    </div>
+                    <a href="{{ url_for('login') }}" class="btn btn-primary w-100">
+                        <i class="fas fa-sign-in-alt me-2"></i>התחבר עכשיו
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Participants List -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-users me-2"></i>
+                    משתתפים ({{ registrations|length }}/10)
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if registrations %}
+                    <div class="list-group list-group-flush">
+                        {% for reg in registrations %}
+                            <div class="list-group-item d-flex justify-content-between align-items-center px-0">
+                                <div>
+                                    <strong>{{ reg.first_name }} {{ reg.last_name }}</strong>
+                                    <br>
+                                    <small class="text-muted">{{ reg.position_name }}</small>
+                                </div>
+                                <span class="badge {% if reg.position_name.startswith('Team A') %}team-a-badge{% else %}team-b-badge{% endif %} rounded-pill">
+                                    <i class="fas fa-basketball-ball"></i>
+                                </span>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-muted text-center">
+                        <i class="fas fa-user-plus me-2"></i>
+                        היה הראשון להירשם!
+                    </p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Share Section -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body text-center">
+                <h5>שתף את המשחק</h5>
+                <p class="text-muted">הזמן חברים להצטרף למשחק</p>
+                <div class="btn-group" role="group">
+                    <button type="button" class="btn btn-outline-primary" onclick="shareWhatsApp()">
+                        <i class="fab fa-whatsapp me-2"></i>WhatsApp
+                    </button>
+                    <button type="button" class="btn btn-outline-info" onclick="shareLink()">
+                        <i class="fas fa-link me-2"></i>העתק קישור
+                    </button>
+                    <button type="button" class="btn btn-outline-success" onclick="shareEmail()">
+                        <i class="fas fa-envelope me-2"></i>אימייל
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/game_detail.js') }}"></script>
+{% endblock %}

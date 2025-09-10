@@ -1,0 +1,207 @@
+/* Register Page Styles */
+
+/* Card Styling */
+.card {
+    border-radius: 20px;
+    overflow: hidden;
+}
+
+.card-header {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%) !important;
+}
+
+/* Form Controls */
+.form-control {
+    border-radius: 10px;
+    border: 2px solid #e9ecef;
+    transition: all 0.3s ease;
+}
+
+.form-control:focus {
+    border-color: #28a745;
+    box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25);
+}
+
+/* Validation States */
+.form-control.is-valid {
+    border-color: #28a745;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'%3e%3cpath fill='%2328a745' d='m2.3 6.73.79-.79L4.25 7.08l3.04-3.04.79.79L4.25 8.83z'/%3e%3c/svg%3e");
+}
+
+.form-control.is-invalid {
+    border-color: #dc3545;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' width='12' height='12' fill='none' stroke='%23dc3545'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath d='m5.8 4.6 2.4 2.8m0-2.8-2.4 2.8'/%3e%3c/svg%3e");
+}
+
+/* Password Strength Indicator */
+.password-strength .progress-bar {
+    transition: all 0.3s ease;
+}
+
+.progress-bar.weak {
+    background-color: #dc3545;
+}
+
+.progress-bar.medium {
+    background-color: #ffc107;
+}
+
+.progress-bar.strong {
+    background-color: #28a745;
+}
+
+.progress {
+    border-radius: 10px;
+    background-color: #e9ecef;
+}
+
+/* Button Styling */
+.btn {
+    border-radius: 10px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+}
+
+.input-group .btn {
+    border-radius: 0 10px 10px 0;
+}
+
+/* Checkbox Styling */
+.form-check-input:checked {
+    background-color: #28a745;
+    border-color: #28a745;
+}
+
+/* Form Text */
+.form-text {
+    font-size: 0.875rem;
+    color: #6c757d;
+}
+
+/* Form Labels */
+.form-label {
+    color: #495057;
+    margin-bottom: 0.75rem;
+}
+
+.form-label i {
+    width: 20px;
+}
+
+/* Benefits Card */
+.border-info {
+    border-width: 2px !important;
+}
+
+.bg-info {
+    background: linear-gradient(135deg, #17a2b8 0%, #138496 100%) !important;
+}
+
+/* Loading State */
+.btn-loading {
+    position: relative;
+    color: transparent !important;
+}
+
+.btn-loading::after {
+    content: "";
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    top: 50%;
+    left: 50%;
+    margin-left: -8px;
+    margin-top: -8px;
+    border: 2px solid #ffffff;
+    border-radius: 50%;
+    border-top-color: transparent;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Password Toggle Button */
+#togglePassword {
+    border-left: none;
+}
+
+#togglePassword:hover {
+    background-color: #f8f9fa;
+}
+
+/* Benefits Icons */
+.benefits-icon {
+    transition: transform 0.3s ease;
+}
+
+.benefits-icon:hover {
+    transform: scale(1.1);
+}
+
+/* Invalid Feedback */
+.invalid-feedback {
+    display: block;
+    width: 100%;
+    margin-top: 0.25rem;
+    font-size: 0.875rem;
+    color: #dc3545;
+}
+
+/* Phone Input Formatting */
+#phone.formatted {
+    font-family: monospace;
+}
+
+/* Animation Classes */
+.fade-in {
+    animation: fadeIn 0.6s ease-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .card-body {
+        padding: 2rem !important;
+    }
+    
+    .btn-lg {
+        padding: 0.75rem 1.5rem;
+        font-size: 1rem;
+    }
+    
+    .benefits-icon {
+        font-size: 1.5rem !important;
+    }
+}
+
+@media (max-width: 576px) {
+    .card-header h2 {
+        font-size: 1.5rem;
+    }
+    
+    .row .col-md-6 {
+        margin-bottom: 1rem;
+    }
+    
+    .benefits-card .col-md-4 {
+        margin-bottom: 2rem;
+    }
+}

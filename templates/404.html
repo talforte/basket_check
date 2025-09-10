@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+
+{% block title %}עמוד לא נמצא - Basket Check{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/404.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-6 col-md-8">
+        <div class="error-container text-center">
+            <!-- Animated Basketball -->
+            <div class="basketball-animation mb-4">
+                <div class="basketball">
+                    <div class="basketball-lines"></div>
+                </div>
+                <div class="bounce-shadow"></div>
+            </div>
+            
+            <!-- Error Message -->
+            <div class="error-content">
+                <h1 class="error-code">404</h1>
+                <h2 class="error-title">אופס! החמצנו את המטרה</h2>
+                <p class="error-description">
+                    הדף שחיפשת לא נמצא. אולי הוא עבר למגרש אחר או שהקישור לא תקין.
+                </p>
+                
+                <!-- Suggestions -->
+                <div class="suggestions mt-4">
+                    <h5 class="mb-3">בואו ננסה משהו אחר:</h5>
+                    <div class="d-grid gap-2 d-md-block">
+                        <a href="{{ url_for('index') }}" class="btn btn-primary btn-lg me-md-2">
+                            <i class="fas fa-home me-2"></i>חזור לדף הבית
+                        </a>
+                        <a href="{{ url_for('games_list') }}" class="btn btn-success btn-lg me-md-2">
+                            <i class="fas fa-list me-2"></i>רשימת משחקים
+                        </a>
+                        {% if current_user.is_logged_in %}
+                            <a href="{{ url_for('dashboard') }}" class="btn btn-info btn-lg">
+                                <i class="fas fa-tachometer-alt me-2"></i>לוח הבקרה
+                            </a>
+                        {% else %}
+                            <a href="{{ url_for('login') }}" class="btn btn-warning btn-lg">
+                                <i class="fas fa-sign-in-alt me-2"></i>התחבר
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <!-- Search Box -->
+                <div class="search-section mt-4">
+                    <h6 class="mb-3">או חפש משהו ספציפי:</h6>
+                    <div class="input-group input-group-lg">
+                        <input type="text" class="form-control" id="errorPageSearch" 
+                               placeholder="חפש משחקים, משתמשים או מיקומים...">
+                        <button class="btn btn-outline-secondary" type="button">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Popular Links -->
+                <div class="popular-links mt-4">
+                    <h6 class="mb-3">קישורים פופולריים:</h6>
+                    <div class="link-grid">
+                        <a href="{{ url_for('games_list') }}" class="link-item">
+                            <i class="fas fa-basketball-ball"></i>
+                            <span>משחקים פתוחים</span>
+                        </a>
+                        {% if current_user.is_manager %}
+                            <a href="{{ url_for('create_game') }}" class="link-item">
+                                <i class="fas fa-plus-circle"></i>
+                                <span>יצירת משחק</span>
+                            </a>
+                        {% endif %}
+                        <a href="{{ url_for('index') }}#features" class="link-item">
+                            <i class="fas fa-info-circle"></i>
+                            <span>על המערכת</span>
+                        </a>
+                        <a href="mailto:support@basketcheck.com" class="link-item">
+                            <i class="fas fa-envelope"></i>
+                            <span>יצירת קשר</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Fun Stats -->
+<div class="row mt-5">
+    <div class="col-12">
+        <div class="card border-warning">
+            <div class="card-header bg-warning text-dark text-center">
+                <h6 class="mb-0">
+                    <i class="fas fa-chart-bar me-2"></i>
+                    בזמן שאתה כאן, קרה הרבה!
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-md-3 mb-3">
+                        <div class="fun-stat">
+                            <div class="stat-number" id="shotsMissed">127</div>
+                            <div class="stat-label">זריקות החמצנו</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="fun-stat">
+                            <div class="stat-number" id="gamesPlayed">1,459</div>
+                            <div class="stat-label">משחקים נערכו</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="fun-stat">
+                            <div class="stat-number" id="playersJoined">856</div>
+                            <div class="stat-label">שחקנים הצטרפו</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="fun-stat">
+                            <div class="stat-number" id="shotsScored">3,247</div>
+                            <div class="stat-label">זריקות נכנסו</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/404.js') }}"></script>
+{% endblock %}

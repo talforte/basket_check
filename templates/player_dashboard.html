@@ -1,0 +1,617 @@
+{% extends "base.html" %}
+
+{% block title %}לוח הבקרה שלי - Basket Check{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <!-- Welcome Header -->
+        <div class="welcome-header mb-4">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h1 class="display-6 fw-bold">
+                        שלום {{ current_user.first_name }}! 
+                        <i class="fas fa-basketball-ball text-warning ms-2"></i>
+                    </h1>
+                    <p class="lead text-muted">
+                        {% if user_games %}
+                            יש לך {{ user_games|length }} משחקים קרובים
+                        {% else %}
+                            זמן להירשם למשחק הבא!
+                        {% endif %}
+                    </p>
+                </div>
+                <div class="col-md-4 text-end">
+                    <div class="player-avatar-large">
+                        {{ current_user.first_name[0] }}{{ current_user.username[0]|upper }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Statistics Cards -->
+<div class="row mb-4">
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="stats-card bg-primary">
+            <div class="stats-icon">
+                <i class="fas fa-calendar-check"></i>
+            </div>
+            <div class="stats-content">
+                <div class="stats-number">{{ user_games|length }}</div>
+                <div class="stats-label">משחקים רשומים</div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="stats-card bg-success">
+            <div class="stats-icon">
+                <i class="fas fa-clock"></i>
+            </div>
+            <div class="stats-content">
+                {% set upcoming_games = user_games|selectattr('game_date', '>=', moment().strftime('%Y-%m-%d'))|list %}
+                <div class="stats-number">{{ upcoming_games|length }}</div>
+                <div class="stats-label">משחקים קרובים</div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="stats-card bg-warning">
+            <div class="stats-icon">
+                <i class="fas fa-star"></i>
+            </div>
+            <div class="stats-content">
+                {% set player_games = user_games|selectattr('position_name', 'match', '^שחקן.*')|list %}
+                <div class="stats-number">{{ player_games|length }}</div>
+                <div class="stats-label">כשחקן</div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="stats-card bg-info">
+            <div class="stats-icon">
+                <i class="fas fa-users-cog"></i>
+            </div>
+            <div class="stats-content">
+                {% set support_games = user_games|reject('match', 'position_name', '^שחקן.*')|list %}
+                <div class="stats-number">{{ support_games|length }}</div>
+                <div class="stats-label">תפקידי עזר</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- My Games Section -->
+    <div class="col-lg-8 mb-4">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="fas fa-calendar-alt me-2"></i>
+                    המשחקים שלי
+                </h5>
+                <div class="btn-group btn-group-sm" role="group">
+                    <input type="radio" class="btn-check" name="gameFilter" id="upcoming" checked>
+                    <label class="btn btn-outline-primary" for="upcoming">קרובים</label>
+                    
+                    <input type="radio" class="btn-check" name="gameFilter" id="all">
+                    <label class="btn btn-outline-primary" for="all">הכל</label>
+                    
+                    <input type="radio" class="btn-check" name="gameFilter" id="past">
+                    <label class="btn btn-outline-primary" for="past">עברו</label>
+                </div>
+            </div>
+            <div class="card-body">
+                {% if user_games %}
+                    <div class="games-timeline">
+                        {% for game in user_games %}
+                            {% set is_upcoming = game.game_date >= moment().strftime('%Y-%m-%d') %}
+                            <div class="timeline-item {% if not is_upcoming %}past-game{% endif %}" 
+                                 data-category="{% if is_upcoming %}upcoming{% else %}past{% endif %}">
+                                <div class="timeline-marker {% if is_upcoming %}upcoming{% else %}past{% endif %}">
+                                    <i class="fas fa-basketball-ball"></i>
+                                </div>
+                                <div class="timeline-content">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div class="flex-grow-1">
+                                            <h6 class="mb-1 fw-bold">{{ game.title }}</h6>
+                                            <div class="game-details">
+                                                <span class="detail-item">
+                                                    <i class="fas fa-calendar text-primary"></i>
+                                                    {{ game.game_date|datetime }}
+                                                </span>
+                                                <span class="detail-item">
+                                                    <i class="fas fa-clock text-warning"></i>
+                                                    {{ game.game_time|time }}
+                                                </span>
+                                                <span class="detail-item">
+                                                    <i class="fas fa-map-marker-alt text-danger"></i>
+                                                    {{ game.location }}
+                                                </span>
+                                            </div>
+                                            <div class="position-badge mt-2">
+                                                <span class="badge {% if game.position_name.startswith('שחקן') %}bg-success{% else %}bg-warning{% endif %}">
+                                                    {{ game.position_name }}
+                                                </span>
+                                                <small class="text-muted ms-2">
+                                                    נרשמת ב-{{ game.registration_time|datetime }}
+                                                </small>
+                                            </div>
+                                        </div>
+                                        <div class="game-actions">
+                                            <a href="{{ url_for('game_detail', game_id=game.game_id) }}" 
+                                               class="btn btn-sm btn-outline-primary">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                            {% if is_upcoming %}
+                                                <button class="btn btn-sm btn-outline-danger ms-1 cancel-registration" 
+                                                        data-game-id="{{ game.game_id }}"
+                                                        data-game-title="{{ game.title }}">
+                                                    <i class="fas fa-times"></i>
+                                                </button>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="empty-state">
+                        <div class="text-center py-4">
+                            <i class="fas fa-calendar-plus text-muted mb-3" style="font-size: 3rem;"></i>
+                            <h5 class="text-muted">עדיין לא נרשמת למשחקים</h5>
+                            <p class="text-muted mb-3">בואו נמצא לך משחק מתאים!</p>
+                            <a href="{{ url_for('games_list') }}" class="btn btn-primary">
+                                <i class="fas fa-search me-2"></i>חפש משחקים
+                            </a>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Quick Actions & Info -->
+    <div class="col-lg-4">
+        <!-- Quick Actions -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="fas fa-bolt me-2"></i>
+                    פעולות מהירות
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="{{ url_for('games_list') }}" class="btn btn-primary">
+                        <i class="fas fa-search me-2"></i>חפש משחקים חדשים
+                    </a>
+                    <a href="{{ url_for('index') }}" class="btn btn-outline-success">
+                        <i class="fas fa-home me-2"></i>חזור לדף הבית
+                    </a>
+                    <button class="btn btn-outline-info" onclick="shareProfile()">
+                        <i class="fas fa-share me-2"></i>שתף פרופיל
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Upcoming Game Alert -->
+        {% set next_game = user_games|selectattr('game_date', '>=', moment().strftime('%Y-%m-%d'))|first %}
+        {% if next_game %}
+            <div class="card border-success mb-4">
+                <div class="card-header bg-success text-white">
+                    <h6 class="mb-0">
+                        <i class="fas fa-exclamation-circle me-2"></i>
+                        המשחק הבא שלך
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <h6 class="card-title">{{ next_game.title }}</h6>
+                    <div class="next-game-info">
+                        <div class="info-item">
+                            <i class="fas fa-calendar text-primary"></i>
+                            <span>{{ next_game.game_date|datetime }}</span>
+                        </div>
+                        <div class="info-item">
+                            <i class="fas fa-clock text-warning"></i>
+                            <span>{{ next_game.game_time|time }}</span>
+                        </div>
+                        <div class="info-item">
+                            <i class="fas fa-map-marker-alt text-danger"></i>
+                            <span>{{ next_game.location }}</span>
+                        </div>
+                    </div>
+                    <div class="mt-3">
+                        <span class="badge bg-success">{{ next_game.position_name }}</span>
+                    </div>
+                    <div class="d-grid mt-3">
+                        <a href="{{ url_for('game_detail', game_id=next_game.game_id) }}" 
+                           class="btn btn-success btn-sm">
+                            <i class="fas fa-eye me-2"></i>פרטי המשחק
+                        </a>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+        
+        <!-- Player Tips -->
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="fas fa-lightbulb me-2"></i>
+                    טיפים לשחקן
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="tips-list">
+                    <div class="tip-item">
+                        <i class="fas fa-check-circle text-success"></i>
+                        <span>הגע 15 דקות לפני תחילת המשחק</span>
+                    </div>
+                    <div class="tip-item">
+                        <i class="fas fa-tshirt text-info"></i>
+                        <span>הבא ביגוד ונעליים מתאימים</span>
+                    </div>
+                    <div class="tip-item">
+                        <i class="fas fa-water text-primary"></i>
+                        <span>אל תשכח להביא מים</span>
+                    </div>
+                    <div class="tip-item">
+                        <i class="fas fa-mobile-alt text-warning"></i>
+                        <span>שמור את מספר הרכז</span>
+                    </div>
+                    <div class="tip-item">
+                        <i class="fas fa-handshake text-success"></i>
+                        <span>היה ספורטיבי ומכבד</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Cancel Registration Modal -->
+<div class="modal fade" id="cancelRegistrationModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">ביטול הרשמה למשחק</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>האם אתה בטוח שברצונך לבטל את ההרשמה למשחק <strong id="cancelGameTitle"></strong>?</p>
+                <p class="text-muted small">ביטול ההרשמה יאפשר לשחקן אחר לתפוס את המקום</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">חזור</button>
+                <button type="button" class="btn btn-danger" id="confirmCancelRegistration">
+                    <i class="fas fa-times me-2"></i>בטל הרשמה
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .welcome-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 20px;
+        padding: 30px;
+        color: white;
+        margin-bottom: 30px;
+    }
+    
+    .player-avatar-large {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        font-weight: bold;
+        border: 3px solid rgba(255, 255, 255, 0.3);
+    }
+    
+    .stats-card {
+        background: linear-gradient(135deg, var(--bs-primary) 0%, var(--bs-primary) 100%);
+        border-radius: 15px;
+        padding: 25px;
+        color: white;
+        display: flex;
+        align-items: center;
+        transition: transform 0.3s ease;
+        border: none;
+    }
+    
+    .stats-card:hover {
+        transform: translateY(-5px);
+    }
+    
+    .stats-card.bg-primary { background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%) !important; }
+    .stats-card.bg-success { background: linear-gradient(135deg, #059669 0%, #047857 100%) !important; }
+    .stats-card.bg-warning { background: linear-gradient(135deg, #d97706 0%, #b45309 100%) !important; }
+    .stats-card.bg-info { background: linear-gradient(135deg, #0891b2 0%, #0e7490 100%) !important; }
+    
+    .stats-icon {
+        font-size: 2.5rem;
+        margin-left: 20px;
+        opacity: 0.8;
+    }
+    
+    .stats-content {
+        flex-grow: 1;
+    }
+    
+    .stats-number {
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 5px;
+    }
+    
+    .stats-label {
+        font-size: 0.9rem;
+        opacity: 0.9;
+    }
+    
+    .games-timeline {
+        position: relative;
+    }
+    
+    .timeline-item {
+        display: flex;
+        margin-bottom: 25px;
+        position: relative;
+        transition: all 0.3s ease;
+    }
+    
+    .timeline-item.hidden {
+        display: none;
+    }
+    
+    .timeline-marker {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 0.9rem;
+        margin-left: 20px;
+        flex-shrink: 0;
+        z-index: 2;
+    }
+    
+    .timeline-marker.upcoming {
+        background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        box-shadow: 0 0 15px rgba(40, 167, 69, 0.3);
+    }
+    
+    .timeline-marker.past {
+        background: #6c757d;
+    }
+    
+    .timeline-content {
+        background: white;
+        border-radius: 15px;
+        padding: 20px;
+        flex-grow: 1;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+        border: 1px solid #e9ecef;
+    }
+    
+    .game-details {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 15px;
+        margin-top: 10px;
+    }
+    
+    .detail-item {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        font-size: 0.9rem;
+        color: #6c757d;
+    }
+    
+    .game-actions {
+        display: flex;
+        gap: 5px;
+    }
+    
+    .next-game-info .info-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 8px;
+        font-size: 0.9rem;
+    }
+    
+    .tips-list .tip-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 12px;
+        font-size: 0.9rem;
+    }
+    
+    .btn-check:checked + .btn-outline-primary {
+        background-color: #667eea;
+        border-color: #667eea;
+    }
+    
+    .empty-state {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        border-radius: 15px;
+        padding: 20px;
+    }
+    
+    @media (max-width: 768px) {
+        .welcome-header {
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .player-avatar-large {
+            margin: 0 auto;
+            margin-top: 15px;
+        }
+        
+        .game-details {
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .stats-card {
+            padding: 20px;
+        }
+        
+        .stats-icon {
+            font-size: 2rem;
+            margin-left: 15px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Game filter functionality
+    const gameFilters = document.querySelectorAll('input[name="gameFilter"]');
+    const timelineItems = document.querySelectorAll('.timeline-item');
+    
+    gameFilters.forEach(filter => {
+        filter.addEventListener('change', function() {
+            const filterValue = this.id;
+            
+            timelineItems.forEach(item => {
+                const category = item.dataset.category;
+                
+                if (filterValue === 'all') {
+                    item.classList.remove('hidden');
+                } else if (filterValue === 'upcoming' && category === 'upcoming') {
+                    item.classList.remove('hidden');
+                } else if (filterValue === 'past' && category === 'past') {
+                    item.classList.remove('hidden');
+                } else {
+                    item.classList.add('hidden');
+                }
+            });
+        });
+    });
+    
+    // Cancel registration functionality
+    const cancelBtns = document.querySelectorAll('.cancel-registration');
+    const cancelModal = new bootstrap.Modal(document.getElementById('cancelRegistrationModal'));
+    const cancelGameTitle = document.getElementById('cancelGameTitle');
+    const confirmCancel = document.getElementById('confirmCancelRegistration');
+    let selectedGameId = null;
+    
+    cancelBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+            selectedGameId = this.dataset.gameId;
+            cancelGameTitle.textContent = this.dataset.gameTitle;
+            cancelModal.show();
+        });
+    });
+    
+    confirmCancel.addEventListener('click', function() {
+        if (selectedGameId) {
+            // Create and submit form for cancellation
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = `/game/${selectedGameId}/cancel`;
+            document.body.appendChild(form);
+            form.submit();
+        }
+    });
+    
+    // Share profile function
+    function shareProfile() {
+        const text = `בואו נשחק כדורסל ביחד! הצטרפו אלי ב-Basket Check: ${window.location.origin}`;
+        
+        if (navigator.share) {
+            navigator.share({
+                title: 'Basket Check',
+                text: text,
+                url: window.location.origin
+            });
+        } else if (navigator.clipboard) {
+            navigator.clipboard.writeText(text);
+            alert('הקישור הועתק ללוח!');
+        } else {
+            // Fallback for older browsers
+            const textArea = document.createElement('textarea');
+            textArea.value = text;
+            document.body.appendChild(textArea);
+            textArea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textArea);
+            alert('הקישור הועתק ללוח!');
+        }
+    }
+    
+    // Page animations
+    document.addEventListener('DOMContentLoaded', function() {
+        // Animate stats cards
+        const statsCards = document.querySelectorAll('.stats-card');
+        statsCards.forEach((card, index) => {
+            card.style.opacity = '0';
+            card.style.transform = 'translateY(30px)';
+            
+            setTimeout(() => {
+                card.style.transition = 'all 0.6s ease';
+                card.style.opacity = '1';
+                card.style.transform = 'translateY(0)';
+            }, index * 100 + 200);
+        });
+        
+        // Animate timeline items
+        const timelineItems = document.querySelectorAll('.timeline-item');
+        timelineItems.forEach((item, index) => {
+            item.style.opacity = '0';
+            item.style.transform = 'translateX(50px)';
+            
+            setTimeout(() => {
+                item.style.transition = 'all 0.6s ease';
+                item.style.opacity = '1';
+                item.style.transform = 'translateX(0)';
+            }, index * 150 + 600);
+        });
+    });
+    
+    // Auto-refresh for upcoming games
+    setInterval(() => {
+        if (document.visibilityState === 'visible') {
+            // Check for game updates every 5 minutes
+            console.log('Checking for game updates...');
+        }
+    }, 300000);
+    
+    // Notification for upcoming games
+    function checkUpcomingGames() {
+        const nextGame = document.querySelector('[data-category="upcoming"]');
+        if (nextGame) {
+            // You can implement notification logic here
+            console.log('You have upcoming games!');
+        }
+    }
+    
+    // Make shareProfile function global
+    window.shareProfile = shareProfile;
+    
+    // Initialize on page load
+    checkUpcomingGames();
+</script>
+{% endblock %}

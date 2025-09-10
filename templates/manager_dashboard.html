@@ -1,0 +1,734 @@
+{% extends "base.html" %}
+
+{% block title %}פאנל ניהול - Basket Check{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <!-- Manager Welcome Header -->
+        <div class="manager-header mb-4">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h1 class="display-6 fw-bold text-white">
+                        <i class="fas fa-crown text-warning me-3"></i>
+                        פאנל ניהול - {{ current_user.first_name }}
+                    </h1>
+                    <p class="lead text-white-50 mb-0">
+                        נהל משחקים, עקוב אחר הרשמות וצור חוויה מושלמת לקהילה
+                    </p>
+                </div>
+                <div class="col-md-4 text-end">
+                    <div class="manager-badge">
+                        <i class="fas fa-user-tie"></i>
+                        <span>מנהל</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-primary text-white">
+                <h6 class="mb-0">
+                    <i class="fas fa-bolt me-2"></i>
+                    פעולות מהירות
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-lg-3 col-md-6 mb-3">
+                        <a href="{{ url_for('create_game') }}" class="btn btn-success btn-lg w-100 quick-action-btn">
+                            <i class="fas fa-plus mb-2"></i>
+                            <div>יצור משחק חדש</div>
+                        </a>
+                    </div>
+                    <div class="col-lg-3 col-md-6 mb-3">
+                        <a href="{{ url_for('manage_games') }}" class="btn btn-info btn-lg w-100 quick-action-btn">
+                            <i class="fas fa-cogs mb-2"></i>
+                            <div>נהל משחקים</div>
+                        </a>
+                    </div>
+                    <div class="col-lg-3 col-md-6 mb-3">
+                        <a href="{{ url_for('games_list') }}" class="btn btn-warning btn-lg w-100 quick-action-btn">
+                            <i class="fas fa-list mb-2"></i>
+                            <div>צפה בכל המשחקים</div>
+                        </a>
+                    </div>
+                    <div class="col-lg-3 col-md-6 mb-3">
+                        <button class="btn btn-secondary btn-lg w-100 quick-action-btn" onclick="generateReport()">
+                            <i class="fas fa-chart-bar mb-2"></i>
+                            <div>דוח סטטיסטיקות</div>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Statistics Dashboard -->
+<div class="row mb-4">
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="stats-card bg-gradient-primary">
+            <div class="stats-icon">
+                <i class="fas fa-calendar-plus"></i>
+            </div>
+            <div class="stats-content">
+                <div class="stats-number">{{ my_games|length }}</div>
+                <div class="stats-label">משחקים שיצרתי</div>
+                <div class="stats-trend">
+                    <i class="fas fa-arrow-up text-success"></i>
+                    <span class="small">+12% מהחודש שעבר</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="stats-card bg-gradient-success">
+            <div class="stats-icon">
+                <i class="fas fa-users"></i>
+            </div>
+            <div class="stats-content">
+                {% set total_registrations = my_games|sum(attribute='registrations_count') %}
+                <div class="stats-number">{{ total_registrations }}</div>
+                <div class="stats-label">סה"כ הרשמות</div>
+                <div class="stats-trend">
+                    <i class="fas fa-arrow-up text-success"></i>
+                    <span class="small">+8% מהחודש שעבר</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="stats-card bg-gradient-warning">
+            <div class="stats-icon">
+                <i class="fas fa-percentage"></i>
+            </div>
+            <div class="stats-content">
+                {% if my_games|length > 0 %}
+                    {% set avg_fill = (total_registrations / (my_games|length * 9) * 100)|round %}
+                {% else %}
+                    {% set avg_fill = 0 %}
+                {% endif %}
+                <div class="stats-number">{{ avg_fill }}%</div>
+                <div class="stats-label">אחוז תפוסה ממוצע</div>
+                <div class="stats-trend">
+                    <i class="fas fa-arrow-up text-success"></i>
+                    <span class="small">+5% מהחודש שעבר</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="stats-card bg-gradient-info">
+            <div class="stats-icon">
+                <i class="fas fa-clock"></i>
+            </div>
+            <div class="stats-content">
+                {% set upcoming_games = my_games|selectattr('game_date', '>=', moment().strftime('%Y-%m-%d'))|list %}
+                <div class="stats-number">{{ upcoming_games|length }}</div>
+                <div class="stats-label">משחקים קרובים</div>
+                <div class="stats-trend">
+                    <i class="fas fa-calendar text-info"></i>
+                    <span class="small">השבוע הקרוב</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- My Games Management -->
+    <div class="col-lg-8 mb-4">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="fas fa-gamepad me-2"></i>
+                    המשחקים שלי
+                </h5>
+                <div class="btn-group btn-group-sm" role="group">
+                    <input type="radio" class="btn-check" name="myGameFilter" id="upcoming-mgmt" checked>
+                    <label class="btn btn-outline-primary" for="upcoming-mgmt">קרובים</label>
+                    
+                    <input type="radio" class="btn-check" name="myGameFilter" id="all-mgmt">
+                    <label class="btn btn-outline-primary" for="all-mgmt">הכל</label>
+                    
+                    <input type="radio" class="btn-check" name="myGameFilter" id="past-mgmt">
+                    <label class="btn btn-outline-primary" for="past-mgmt">הסתיימו</label>
+                </div>
+            </div>
+            <div class="card-body">
+                {% if my_games %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>משחק</th>
+                                    <th>תאריך ושעה</th>
+                                    <th>מקום</th>
+                                    <th>הרשמות</th>
+                                    <th>סטטוס</th>
+                                    <th>פעולות</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for game in my_games %}
+                                    {% set is_upcoming = game.game_date >= moment().strftime('%Y-%m-%d') %}
+                                    <tr class="game-row {% if not is_upcoming %}past-game-row{% endif %}" 
+                                        data-category="{% if is_upcoming %}upcoming{% else %}past{% endif %}">
+                                        <td>
+                                            <div class="game-title">
+                                                <strong>{{ game.title }}</strong>
+                                                {% if game.description %}
+                                                    <br><small class="text-muted">{{ game.description[:50] }}...</small>
+                                                {% endif %}
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="game-datetime">
+                                                <div>{{ game.game_date|datetime }}</div>
+                                                <small class="text-muted">{{ game.game_time|time }}</small>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <small>{{ game.location }}</small>
+                                        </td>
+                                        <td>
+                                            <div class="registrations-info">
+                                                <span class="badge bg-primary">{{ game.registrations_count }}/{{ game.max_players + 4 }}</span>
+                                                <div class="progress mt-1" style="height: 4px;">
+                                                    {% set fill_percent = (game.registrations_count / (game.max_players + 4) * 100)|round %}
+                                                    <div class="progress-bar" style="width: {{ fill_percent }}%"></div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            {% if game.status == 'open' %}
+                                                <span class="badge bg-success">פתוח</span>
+                                            {% elif game.status == 'closed' %}
+                                                <span class="badge bg-warning">סגור</span>
+                                            {% elif game.status == 'cancelled' %}
+                                                <span class="badge bg-danger">בוטל</span>
+                                            {% else %}
+                                                <span class="badge bg-info">{{ game.status }}</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <div class="btn-group btn-group-sm" role="group">
+                                                <a href="{{ url_for('game_detail', game_id=game.game_id) }}" 
+                                                   class="btn btn-outline-primary" title="צפה">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                                {% if is_upcoming %}
+                                                    <button class="btn btn-outline-warning edit-game" 
+                                                            data-game-id="{{ game.game_id }}" title="ערוך">
+                                                        <i class="fas fa-edit"></i>
+                                                    </button>
+                                                    <button class="btn btn-outline-danger cancel-game" 
+                                                            data-game-id="{{ game.game_id }}"
+                                                            data-game-title="{{ game.title }}" title="בטל">
+                                                        <i class="fas fa-times"></i>
+                                                    </button>
+                                                {% endif %}
+                                            </div>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="empty-state text-center py-4">
+                        <i class="fas fa-plus-circle text-muted mb-3" style="font-size: 3rem;"></i>
+                        <h5 class="text-muted">עדיין לא יצרת משחקים</h5>
+                        <p class="text-muted mb-3">בואו ניצור את המשחק הראשון שלך!</p>
+                        <a href="{{ url_for('create_game') }}" class="btn btn-primary">
+                            <i class="fas fa-plus me-2"></i>יצור משחק חדש
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Management Tools -->
+    <div class="col-lg-4">
+        <!-- Recent Activity -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="fas fa-bell me-2"></i>
+                    פעילות אחרונה
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="activity-feed">
+                    <div class="activity-item">
+                        <div class="activity-icon bg-success">
+                            <i class="fas fa-user-plus"></i>
+                        </div>
+                        <div class="activity-content">
+                            <div class="activity-text">משתמש חדש נרשם למשחק</div>
+                            <small class="text-muted">לפני 5 דקות</small>
+                        </div>
+                    </div>
+                    <div class="activity-item">
+                        <div class="activity-icon bg-info">
+                            <i class="fas fa-calendar"></i>
+                        </div>
+                        <div class="activity-content">
+                            <div class="activity-text">משחק חדש נוצר</div>
+                            <small class="text-muted">לפני שעה</small>
+                        </div>
+                    </div>
+                    <div class="activity-item">
+                        <div class="activity-icon bg-warning">
+                            <i class="fas fa-exclamation"></i>
+                        </div>
+                        <div class="activity-content">
+                            <div class="activity-text">משחק התמלא</div>
+                            <small class="text-muted">לפני 2 שעות</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Management Tips -->
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="fas fa-lightbulb me-2"></i>
+                    טיפים לניהול
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="tips-list">
+                    <div class="tip-item">
+                        <i class="fas fa-check-circle text-success"></i>
+                        <span>צור משחקים בזמן קבוע</span>
+                    </div>
+                    <div class="tip-item">
+                        <i class="fas fa-users text-info"></i>
+                        <span>עודד משתתפים חדשים</span>
+                    </div>
+                    <div class="tip-item">
+                        <i class="fas fa-mobile-alt text-warning"></i>
+                        <span>השאר פרטי קשר למשתתפים</span>
+                    </div>
+                    <div class="tip-item">
+                        <i class="fas fa-chart-line text-primary"></i>
+                        <span>עקוב אחר הסטטיסטיקות</span>
+                    </div>
+                    <div class="tip-item">
+                        <i class="fas fa-heart text-danger"></i>
+                        <span>שמור על רוח הקבוצה</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Personal Games as Player -->
+{% if user_games %}
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-user-athlete me-2"></i>
+                    המשחקים שלי כשחקן
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    {% for game in user_games[:3] %}
+                        <div class="col-md-4 mb-3">
+                            <div class="card border-success">
+                                <div class="card-body">
+                                    <h6 class="card-title">{{ game.title }}</h6>
+                                    <p class="card-text">
+                                        <small class="text-muted">
+                                            {{ game.game_date|datetime }} - {{ game.game_time|time }}
+                                        </small>
+                                    </p>
+                                    <span class="badge bg-success">{{ game.position_name }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .manager-header {
+        background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+        border-radius: 20px;
+        padding: 30px;
+        margin-bottom: 30px;
+    }
+    
+    .manager-badge {
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 50px;
+        padding: 15px 25px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        color: white;
+        font-weight: 500;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+    }
+    
+    .quick-action-btn {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 20px;
+        height: 100px;
+        justify-content: center;
+        border-radius: 15px;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        border: none;
+    }
+    
+    .quick-action-btn:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+    }
+    
+    .quick-action-btn i {
+        font-size: 1.5rem;
+    }
+    
+    .stats-card {
+        background: white;
+        border-radius: 15px;
+        padding: 25px;
+        display: flex;
+        align-items: center;
+        border: none;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+        transition: transform 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .stats-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: var(--gradient);
+        opacity: 0.1;
+        z-index: 1;
+    }
+    
+    .stats-card.bg-gradient-primary {
+        --gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+    
+    .stats-card.bg-gradient-success {
+        --gradient: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+    }
+    
+    .stats-card.bg-gradient-warning {
+        --gradient: linear-gradient(135deg, #FF9800 0%, #F57C00 100%);
+    }
+    
+    .stats-card.bg-gradient-info {
+        --gradient: linear-gradient(135deg, #2196F3 0%, #1976D2 100%);
+    }
+    
+    .stats-card:hover {
+        transform: translateY(-5px);
+    }
+    
+    .stats-icon {
+        font-size: 2.5rem;
+        margin-left: 20px;
+        opacity: 0.7;
+        z-index: 2;
+        position: relative;
+    }
+    
+    .stats-content {
+        flex-grow: 1;
+        z-index: 2;
+        position: relative;
+    }
+    
+    .stats-number {
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 5px;
+        color: #333;
+    }
+    
+    .stats-label {
+        font-size: 0.9rem;
+        color: #666;
+        margin-bottom: 5px;
+    }
+    
+    .stats-trend {
+        font-size: 0.8rem;
+        color: #28a745;
+    }
+    
+    .game-row.hidden {
+        display: none;
+    }
+    
+    .game-title strong {
+        color: #333;
+    }
+    
+    .registrations-info .progress {
+        width: 60px;
+    }
+    
+    .activity-feed {
+        max-height: 300px;
+        overflow-y: auto;
+    }
+    
+    .activity-item {
+        display: flex;
+        align-items: center;
+        margin-bottom: 15px;
+        padding-bottom: 15px;
+        border-bottom: 1px solid #eee;
+    }
+    
+    .activity-item:last-child {
+        border-bottom: none;
+        margin-bottom: 0;
+        padding-bottom: 0;
+    }
+    
+    .activity-icon {
+        width: 35px;
+        height: 35px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        margin-left: 15px;
+        flex-shrink: 0;
+    }
+    
+    .activity-content {
+        flex-grow: 1;
+    }
+    
+    .activity-text {
+        font-size: 0.9rem;
+        color: #333;
+        margin-bottom: 2px;
+    }
+    
+    .tips-list .tip-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 12px;
+        font-size: 0.9rem;
+    }
+    
+    .btn-check:checked + .btn-outline-primary {
+        background-color: #1e3c72;
+        border-color: #1e3c72;
+    }
+    
+    .table th {
+        border-top: none;
+        background-color: #f8f9fa;
+        font-weight: 600;
+        font-size: 0.9rem;
+    }
+    
+    .table td {
+        vertical-align: middle;
+        font-size: 0.9rem;
+    }
+    
+    .game-datetime div {
+        font-weight: 500;
+    }
+    
+    @media (max-width: 768px) {
+        .manager-header {
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .manager-badge {
+            margin: 15px auto 0;
+            justify-content: center;
+        }
+        
+        .stats-card {
+            padding: 20px;
+        }
+        
+        .stats-icon {
+            font-size: 2rem;
+            margin-left: 15px;
+        }
+        
+        .quick-action-btn {
+            height: 80px;
+            padding: 15px;
+        }
+        
+        .table-responsive {
+            font-size: 0.8rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Game filter functionality for management
+    const mgmtFilters = document.querySelectorAll('input[name="myGameFilter"]');
+    const gameRows = document.querySelectorAll('.game-row');
+    
+    mgmtFilters.forEach(filter => {
+        filter.addEventListener('change', function() {
+            const filterValue = this.id.replace('-mgmt', '');
+            
+            gameRows.forEach(row => {
+                const category = row.dataset.category;
+                
+                if (filterValue === 'all') {
+                    row.classList.remove('hidden');
+                } else if (filterValue === 'upcoming' && category === 'upcoming') {
+                    row.classList.remove('hidden');
+                } else if (filterValue === 'past' && category === 'past') {
+                    row.classList.remove('hidden');
+                } else {
+                    row.classList.add('hidden');
+                }
+            });
+        });
+    });
+    
+    // Edit game functionality
+    const editBtns = document.querySelectorAll('.edit-game');
+    editBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+            const gameId = this.dataset.gameId;
+            // You can implement edit functionality here
+            alert(`עריכת משחק ${gameId} - בהכנה`);
+        });
+    });
+    
+    // Cancel game functionality
+    const cancelBtns = document.querySelectorAll('.cancel-game');
+    cancelBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+            const gameId = this.dataset.gameId;
+            const gameTitle = this.dataset.gameTitle;
+            
+            if (confirm(`האם אתה בטוח שברצונך לבטל את המשחק "${gameTitle}"?`)) {
+                // Implement cancel game logic
+                alert(`ביטול משחק ${gameId} - בהכנה`);
+            }
+        });
+    });
+    
+    // Generate report functionality
+    function generateReport() {
+        alert('דוח סטטיסטיקות - בהכנה');
+        // You can implement report generation here
+    }
+    
+    // Page animations
+    document.addEventListener('DOMContentLoaded', function() {
+        // Animate quick action buttons
+        const quickActions = document.querySelectorAll('.quick-action-btn');
+        quickActions.forEach((btn, index) => {
+            btn.style.opacity = '0';
+            btn.style.transform = 'translateY(30px)';
+            
+            setTimeout(() => {
+                btn.style.transition = 'all 0.6s ease';
+                btn.style.opacity = '1';
+                btn.style.transform = 'translateY(0)';
+            }, index * 100 + 200);
+        });
+        
+        // Animate stats cards
+        const statsCards = document.querySelectorAll('.stats-card');
+        statsCards.forEach((card, index) => {
+            card.style.opacity = '0';
+            card.style.transform = 'translateY(30px)';
+            
+            setTimeout(() => {
+                card.style.transition = 'all 0.6s ease';
+                card.style.opacity = '1';
+                card.style.transform = 'translateY(0)';
+            }, index * 100 + 400);
+        });
+        
+        // Animate table rows
+        const tableRows = document.querySelectorAll('.game-row');
+        tableRows.forEach((row, index) => {
+            row.style.opacity = '0';
+            row.style.transform = 'translateX(50px)';
+            
+            setTimeout(() => {
+                row.style.transition = 'all 0.6s ease';
+                row.style.opacity = '1';
+                row.style.transform = 'translateX(0)';
+            }, index * 150 + 800);
+        });
+    });
+    
+    // Auto-refresh for real-time updates
+    setInterval(() => {
+        if (document.visibilityState === 'visible') {
+            // You can implement real-time updates here
+            console.log('Checking for management updates...');
+        }
+    }, 60000); // Every minute
+    
+    // Make generateReport function global
+    window.generateReport = generateReport;
+    
+    // Keyboard shortcuts for managers
+    document.addEventListener('keydown', function(e) {
+        // Ctrl/Cmd + N for new game
+        if ((e.ctrlKey || e.metaKey) && e.key === 'n') {
+            e.preventDefault();
+            window.location.href = '{{ url_for("create_game") }}';
+        }
+        
+        // Ctrl/Cmd + M for manage games
+        if ((e.ctrlKey || e.metaKey) && e.key === 'm') {
+            e.preventDefault();
+            window.location.href = '{{ url_for("manage_games") }}';
+        }
+    });
+</script>
+{% endblock %}

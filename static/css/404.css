@@ -1,0 +1,213 @@
+.error-container {
+    padding: 40px 20px;
+}
+
+.basketball-animation {
+    position: relative;
+    height: 150px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.basketball {
+    width: 80px;
+    height: 80px;
+    background: linear-gradient(135deg, #ff6b35 0%, #ff8c42 50%, #ff6b35 100%);
+    border-radius: 50%;
+    position: relative;
+    animation: bounce 2s infinite ease-in-out;
+    box-shadow: 0 0 20px rgba(255, 107, 53, 0.3);
+}
+
+.basketball-lines::before,
+.basketball-lines::after {
+    content: '';
+    position: absolute;
+    background: #333;
+    border-radius: 2px;
+}
+
+.basketball-lines::before {
+    width: 2px;
+    height: 80px;
+    left: 50%;
+    top: 0;
+    transform: translateX(-50%);
+}
+
+.basketball-lines::after {
+    width: 80px;
+    height: 2px;
+    top: 50%;
+    left: 0;
+    transform: translateY(-50%);
+}
+
+.bounce-shadow {
+    position: absolute;
+    bottom: -10px;
+    width: 60px;
+    height: 15px;
+    background: radial-gradient(ellipse, rgba(0,0,0,0.2) 0%, transparent 70%);
+    border-radius: 50%;
+    animation: shadowBounce 2s infinite ease-in-out;
+}
+
+@keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-30px); }
+}
+
+@keyframes shadowBounce {
+    0%, 100% { transform: scale(1); opacity: 0.3; }
+    50% { transform: scale(0.8); opacity: 0.6; }
+}
+
+.error-code {
+    font-size: 8rem;
+    font-weight: 900;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 20px;
+    line-height: 1;
+}
+
+.error-title {
+    color: #333;
+    font-weight: 700;
+    margin-bottom: 20px;
+    font-size: 2.5rem;
+}
+
+.error-description {
+    color: #666;
+    font-size: 1.2rem;
+    margin-bottom: 30px;
+    line-height: 1.6;
+}
+
+.suggestions h5 {
+    color: #495057;
+    font-weight: 600;
+}
+
+.btn {
+    border-radius: 25px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+}
+
+.search-section {
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+.input-group-lg .form-control {
+    border-radius: 25px 0 0 25px;
+    border: 2px solid #e9ecef;
+}
+
+.input-group-lg .btn {
+    border-radius: 0 25px 25px 0;
+    border: 2px solid #e9ecef;
+    border-right: none;
+}
+
+.link-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.link-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 15px;
+    background: white;
+    border: 2px solid #e9ecef;
+    border-radius: 15px;
+    text-decoration: none;
+    color: #495057;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
+.link-item:hover {
+    background: #f8f9fa;
+    border-color: #667eea;
+    color: #667eea;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+}
+
+.link-item i {
+    font-size: 1.2rem;
+    width: 24px;
+    text-align: center;
+}
+
+.fun-stat {
+    padding: 20px;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-radius: 15px;
+    transition: transform 0.3s ease;
+}
+
+.fun-stat:hover {
+    transform: scale(1.05);
+}
+
+.fun-stat .stat-number {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #ffc107;
+    margin-bottom: 5px;
+}
+
+.fun-stat .stat-label {
+    color: #6c757d;
+    font-size: 0.9rem;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+    .error-code {
+        font-size: 5rem;
+    }
+    
+    .error-title {
+        font-size: 2rem;
+    }
+    
+    .error-description {
+        font-size: 1rem;
+    }
+    
+    .basketball {
+        width: 60px;
+        height: 60px;
+    }
+    
+    .basketball-lines::before {
+        height: 60px;
+    }
+    
+    .basketball-lines::after {
+        width: 60px;
+    }
+    
+    .link-grid {
+        grid-template-columns: 1fr;
+    }
+}

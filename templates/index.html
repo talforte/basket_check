@@ -1,0 +1,224 @@
+{% extends "base.html" %}
+
+{% block title %}Basket Check - דף הבית{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/index.css') }}">
+
+<div class="row">
+    <div class="col-12">
+        <!-- Hero Section -->
+        <div class="text-center mb-5">
+            <h1 class="display-4 fw-bold text-primary mb-3">
+                <i class="fas fa-basketball-ball text-warning me-3"></i>
+                ברוכים הבאים ל-Basket Check
+            </h1>
+            <p class="lead text-muted mb-4">
+                המקום המושלם לארגון והשתתפות במשחקי כדורסל קהילתיים
+            </p>
+            {% if not current_user.is_logged_in %}
+                <div>
+                    <a href="{{ url_for('register') }}" class="btn btn-primary btn-lg me-3">
+                        <i class="fas fa-user-plus me-2"></i>הצטרף עכשיו
+                    </a>
+                    <a href="{{ url_for('login') }}" class="btn btn-outline-primary btn-lg">
+                        <i class="fas fa-sign-in-alt me-2"></i>התחבר
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Statistics Row -->
+<div class="row mb-5">
+    <div class="col-md-3 col-sm-6 mb-3">
+        <div class="stats-card">
+            <div class="stats-number">{{ games|length }}</div>
+            <div>משחקים פתוחים</div>
+        </div>
+    </div>
+    <div class="col-md-3 col-sm-6 mb-3">
+        <div class="stats-card" style="background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);">
+            <div class="stats-number">
+                {% set total_spots = games|sum(attribute='available_spots') %}
+                {{ total_spots }}
+            </div>
+            <div>מקומות פנויים</div>
+        </div>
+    </div>
+    <div class="col-md-3 col-sm-6 mb-3">
+        <div class="stats-card" style="background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%);">
+            <div class="stats-number">
+                {% set total_registered = games|sum(attribute='registrations_count') %}
+                {{ total_registered }}
+            </div>
+            <div>שחקנים נרשמו</div>
+        </div>
+    </div>
+    <div class="col-md-3 col-sm-6 mb-3">
+        <div class="stats-card" style="background: linear-gradient(135deg, #9C27B0 0%, #7B1FA2 100%);">
+            <div class="stats-number">24/7</div>
+            <div>זמינות המערכת</div>
+        </div>
+    </div>
+</div>
+
+<!-- Games Section -->
+<div class="row">
+    <div class="col-12">
+        <h2 class="mb-4">
+            <i class="fas fa-calendar-alt text-primary me-2"></i>
+            משחקים קרובים
+        </h2>
+        
+        {% if games %}
+            <div class="row">
+                {% for game in games %}
+                    <div class="col-lg-6 col-xl-4 mb-4">
+                        <div class="card h-100 game-card-hover">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-start mb-3">
+                                    <h5 class="card-title fw-bold">{{ game.title }}</h5>
+                                    <span class="badge bg-success">{{ game.status }}</span>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <div class="d-flex align-items-center mb-2">
+                                        <i class="fas fa-calendar text-primary me-2"></i>
+                                        <span>{{ game.game_date|datetime }}</span>
+                                    </div>
+                                    <div class="d-flex align-items-center mb-2">
+                                        <i class="fas fa-clock text-warning me-2"></i>
+                                        <span>{{ game.game_time|time }}</span>
+                                    </div>
+                                    <div class="d-flex align-items-center mb-2">
+                                        <i class="fas fa-map-marker-alt text-danger me-2"></i>
+                                        <span>{{ game.location }}</span>
+                                    </div>
+                                    <div class="d-flex align-items-center">
+                                        <i class="fas fa-users text-info me-2"></i>
+                                        <span>{{ game.registrations_count }}/{{ game.max_players }} נרשמו</span>
+                                        {% if game.available_spots > 0 %}
+                                            <span class="badge bg-success ms-2">{{ game.available_spots }} פנוי</span>
+                                        {% else %}
+                                            <span class="badge bg-danger ms-2">מלא</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                
+                                {% if game.description %}
+                                    <p class="card-text text-muted small">{{ game.description[:100] }}{% if game.description|length > 100 %}...{% endif %}</p>
+                                {% endif %}
+                                
+                                <!-- Progress Bar -->
+                                <div class="mb-3">
+                                    <div class="d-flex justify-content-between small text-muted mb-1">
+                                        <span>רמת תפוסה</span>
+                                        <span>{{ ((game.registrations_count / game.max_players) * 100)|round }}%</span>
+                                    </div>
+                                    <div class="progress" style="height: 8px;">
+                                        <div class="progress-bar" role="progressbar" 
+                                             style="width: {{ ((game.registrations_count / game.max_players) * 100)|round }}%"
+                                             aria-valuenow="{{ game.registrations_count }}" 
+                                             aria-valuemin="0" 
+                                             aria-valuemax="{{ game.max_players }}">
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Action Buttons -->
+                                <div class="d-grid gap-2">
+                                    <a href="{{ url_for('game_detail', game_id=game.game_id) }}" 
+                                       class="btn btn-primary">
+                                        <i class="fas fa-eye me-2"></i>צפה בפרטים
+                                    </a>
+                                    {% if current_user.is_logged_in and game.available_spots > 0 %}
+                                        <button class="btn btn-success btn-sm" 
+                                                onclick="quickRegister({{ game.game_id }})">
+                                            <i class="fas fa-plus me-2"></i>הרשמה מהירה
+                                        </button>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <!-- Card Footer -->
+                            <div class="card-footer bg-light">
+                                <small class="text-muted">
+                                    <i class="fas fa-user me-1"></i>
+                                    יוצר: {{ game.first_name }} {{ game.last_name }}
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+            
+            <!-- View All Games Button -->
+            <div class="text-center mt-4">
+                <a href="{{ url_for('games_list') }}" class="btn btn-outline-primary btn-lg">
+                    <i class="fas fa-list me-2"></i>צפה בכל המשחקים
+                </a>
+            </div>
+        {% else %}
+            <!-- No Games State -->
+            <div class="text-center py-5">
+                <div class="mb-4">
+                    <i class="fas fa-basketball-ball text-muted" style="font-size: 4rem;"></i>
+                </div>
+                <h3 class="text-muted">אין משחקים פתוחים כרגע</h3>
+                <p class="text-muted mb-4">
+                    {% if current_user.is_manager %}
+                        בואו ניצור את המשחק הראשון!
+                    {% else %}
+                        חזור מאוחר יותר או צור קשר עם המנהלים ליצירת משחקים חדשים
+                    {% endif %}
+                </p>
+                {% if current_user.is_manager %}
+                    <a href="{{ url_for('create_game') }}" class="btn btn-primary btn-lg">
+                        <i class="fas fa-plus me-2"></i>צור משחק חדש
+                    </a>
+                {% endif %}
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Features Section -->
+<div class="row mt-5">
+    <div class="col-12">
+        <h2 class="text-center mb-5">למה לבחור ב-Basket Check?</h2>
+        <div class="row">
+            <div class="col-md-4 mb-4">
+                <div class="text-center">
+                    <div class="mb-3">
+                        <i class="fas fa-mobile-alt text-primary" style="font-size: 3rem;"></i>
+                    </div>
+                    <h5>קל לשימוש</h5>
+                    <p class="text-muted">ממשק פשוט ואינטואיטיבי שמאפשר הרשמה מהירה למשחקים</p>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="text-center">
+                    <div class="mb-3">
+                        <i class="fas fa-users text-success" style="font-size: 3rem;"></i>
+                    </div>
+                    <h5>קהילה חזקה</h5>
+                    <p class="text-muted">צור קשר עם שחקנים אחרים וארגן משחקים קבועים</p>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="text-center">
+                    <div class="mb-3">
+                        <i class="fas fa-chart-line text-warning" style="font-size: 3rem;"></i>
+                    </div>
+                    <h5>מעקב והתקדמות</h5>
+                    <p class="text-muted">עקוב אחר ההשתתפות שלך ובנה סטטיסטיקות אישיות</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/index.js') }}"></script>
+{% endblock %}

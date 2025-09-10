@@ -1,0 +1,251 @@
+{% extends "base.html" %}
+
+{% block title %}כל המשחקים - Basket Check{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/games_list.css') }}">
+
+<div class="row">
+    <div class="col-12">
+        <!-- Page Header -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h1 class="display-6 fw-bold">
+                    <i class="fas fa-list text-primary me-3"></i>
+                    כל המשחקים
+                </h1>
+                <p class="text-muted mb-0">{{ games|length }} משחקים זמינים להרשמה</p>
+            </div>
+            
+            {% if current_user.is_manager %}
+                <div>
+                    <a href="{{ url_for('create_game') }}" class="btn btn-primary btn-lg">
+                        <i class="fas fa-plus me-2"></i>יצור משחק חדש
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+        
+        <!-- Filters and Search -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <label for="searchFilter" class="form-label">חיפוש משחקים</label>
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="fas fa-search"></i>
+                            </span>
+                            <input type="text" class="form-control" id="searchFilter" 
+                                   placeholder="חפש לפי כותרת או מיקום...">
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-3">
+                        <label for="dateFilter" class="form-label">סינון לפי תאריך</label>
+                        <select class="form-select" id="dateFilter">
+                            <option value="">כל התאריכים</option>
+                            <option value="today">היום</option>
+                            <option value="tomorrow">מחר</option>
+                            <option value="week">השבוע</option>
+                            <option value="month">החודש</option>
+                        </select>
+                    </div>
+                    
+                    <div class="col-md-3">
+                        <label for="availabilityFilter" class="form-label">זמינות</label>
+                        <select class="form-select" id="availabilityFilter">
+                            <option value="">הכל</option>
+                            <option value="available">יש מקומות פנויים</option>
+                            <option value="full">מלא</option>
+                        </select>
+                    </div>
+                    
+                    <div class="col-md-2">
+                        <label class="form-label">&nbsp;</label>
+                        <div>
+                            <button class="btn btn-outline-secondary w-100" id="clearFilters">
+                                <i class="fas fa-times me-1"></i>נקה
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Games Grid -->
+<div class="row" id="gamesContainer">
+    {% if games %}
+        {% for game in games %}
+            <div class="col-lg-6 col-xl-4 mb-4 game-item" 
+                 data-title="{{ game.title|lower }}" 
+                 data-location="{{ game.location|lower }}"
+                 data-date="{{ game.game_date }}"
+                 data-available="{{ game.available_spots > 0 }}">
+                <div class="card h-100 game-card">
+                    <div class="card-header border-0 pb-0">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <h5 class="card-title mb-0 text-truncate">{{ game.title }}</h5>
+                            <div class="badges">
+                                {% if game.available_spots > 0 %}
+                                    <span class="badge bg-success">פתוח</span>
+                                {% else %}
+                                    <span class="badge bg-danger">מלא</span>
+                                {% endif %}
+                                {% if game.registrations_count == 0 %}
+                                    <span class="badge bg-info">חדש</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card-body">
+                        <!-- Game Info -->
+                        <div class="game-info mb-3">
+                            <div class="info-row">
+                                <i class="fas fa-calendar text-primary"></i>
+                                <span>{{ game.game_date|datetime }}</span>
+                            </div>
+                            <div class="info-row">
+                                <i class="fas fa-clock text-warning"></i>
+                                <span>{{ game.game_time|time }}</span>
+                            </div>
+                            <div class="info-row">
+                                <i class="fas fa-map-marker-alt text-danger"></i>
+                                <span class="text-truncate">{{ game.location }}</span>
+                            </div>
+                            <div class="info-row">
+                                <i class="fas fa-user text-info"></i>
+                                <span>{{ game.first_name }} {{ game.last_name }}</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Participants Preview -->
+                        <div class="participants-preview mb-3">
+                            <h6 class="mb-2">
+                                <i class="fas fa-users me-2"></i>
+                                משתתפים ({{ game.registrations_count }}/{{ game.max_players + 4 }})
+                            </h6>
+                            
+                            {% if game.registrations %}
+                                <div class="participants-avatars">
+                                    {% for reg in game.registrations[:6] %}
+                                        <div class="participant-avatar" title="{{ reg.first_name }} {{ reg.last_name }} - {{ reg.position_name }}">
+                                            {{ reg.first_name[0] }}{{ reg.last_name[0] }}
+                                        </div>
+                                    {% endfor %}
+                                    {% if game.registrations|length > 6 %}
+                                        <div class="participant-avatar more">
+                                            +{{ game.registrations|length - 6 }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            {% else %}
+                                <p class="text-muted small mb-0">עדיין אין משתתפים</p>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Progress Bar -->
+                        <div class="availability-bar mb-3">
+                            {% set total_spots = game.max_players + 4 %}
+                            {% set filled_percentage = (game.registrations_count / total_spots * 100)|round %}
+                            <div class="d-flex justify-content-between small text-muted mb-1">
+                                <span>תפוסה</span>
+                                <span>{{ filled_percentage }}%</span>
+                            </div>
+                            <div class="progress" style="height: 6px;">
+                                <div class="progress-bar bg-gradient" 
+                                     style="width: {{ filled_percentage }}%; 
+                                            background: linear-gradient(45deg, 
+                                                {% if filled_percentage < 50 %}#28a745{% elif filled_percentage < 80 %}#ffc107{% else %}#dc3545{% endif %}, 
+                                                {% if filled_percentage < 50 %}#20c997{% elif filled_percentage < 80 %}#fd7e14{% else %}#e74c3c{% endif %});">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        {% if game.description %}
+                            <p class="card-text text-muted small">
+                                {{ game.description[:80] }}{% if game.description|length > 80 %}...{% endif %}
+                            </p>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Card Actions -->
+                    <div class="card-footer bg-transparent border-0 pt-0" style="position: relative; z-index: 10;">
+                        <div class="d-grid gap-2">
+                            <!-- כפתור פשוט שבטוח עובד -->
+                            <button type="button" 
+                                    onclick="location.href='/game/{{ game.game_id }}'"
+                                    class="btn btn-primary"
+                                    style="cursor: pointer; position: relative; z-index: 100;">
+                                <i class="fas fa-eye me-2"></i>צפה בפרטים
+                            </button>
+                            
+                            {% if not current_user.is_logged_in %}
+                                <a href="{{ url_for('login') }}" 
+                                class="btn btn-outline-primary btn-sm"
+                                style="cursor: pointer; position: relative; z-index: 100;">
+                                    <i class="fas fa-sign-in-alt me-2"></i>התחבר להרשמה
+                                </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    {% else %}
+        <!-- Empty State -->
+        <div class="col-12">
+            <div class="text-center py-5">
+                <div class="mb-4">
+                    <i class="fas fa-basketball-ball text-muted" style="font-size: 5rem; opacity: 0.3;"></i>
+                </div>
+                <h3 class="text-muted">אין משחקים זמינים כרגע</h3>
+                <p class="text-muted">חזור מאוחר יותר או צור קשר עם המנהלים</p>
+                {% if current_user.is_manager %}
+                    <a href="{{ url_for('create_game') }}" class="btn btn-primary btn-lg mt-3">
+                        <i class="fas fa-plus me-2"></i>צור את המשחק הראשון
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    {% endif %}
+</div>
+
+<!-- No Results Message -->
+<div class="row d-none" id="noResults">
+    <div class="col-12">
+        <div class="text-center py-5">
+            <i class="fas fa-search text-muted mb-3" style="font-size: 3rem;"></i>
+            <h4 class="text-muted">לא נמצאו משחקים</h4>
+            <p class="text-muted">נסה לשנות את הסינון או החיפוש</p>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Register Modal -->
+<div class="modal fade" id="quickRegisterModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">הרשמה מהירה למשחק</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>האם אתה בטוח שברצונך להירשם למשחק <strong id="gameTitle"></strong>?</p>
+                <p class="text-muted small">תוכל לבחור תפקיד ספציפי בדף פרטי המשחק</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ביטול</button>
+                <button type="button" class="btn btn-success" id="confirmQuickRegister">
+                    <i class="fas fa-check me-2"></i>אישור הרשמה
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/games_list.js') }}"></script>
+{% endblock %}

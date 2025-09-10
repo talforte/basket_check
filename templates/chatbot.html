@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+
+{% block title %}צ'אטבוט כדורסל - Basket Check{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/chatbot.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <!-- Header -->
+        <div class="chatbot-header mb-4">
+            <div class="text-center">
+                <h1 class="display-6 fw-bold text-white">
+                    <i class="fas fa-robot me-3"></i>
+                    צ'אטבוט כדורסל חכם
+                </h1>
+                <p class="lead text-white-50 mb-0">
+                    שאל אותי הכל על חוקי כדורסל, טכניקות וטקטיקות
+                </p>
+            </div>
+        </div>
+        
+        <!-- Chat Container -->
+        <div class="card shadow-lg border-0 chat-container">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-comments me-2"></i>
+                    שיחה עם הבוט
+                    <span class="float-end">
+                        <span id="status-indicator" class="badge bg-success">מחובר</span>
+                    </span>
+                </h5>
+            </div>
+            
+            <div class="card-body p-0">
+                <!-- Chat Messages -->
+                <div id="chat-messages" class="chat-messages">
+                    <div class="message bot-message">
+                        <div class="message-avatar">
+                            <i class="fas fa-robot"></i>
+                        </div>
+                        <div class="message-content">
+                            <div class="message-bubble">
+                                שלום! אני הצ'אטבוט של Basket Check. אני יכול לעזור לך עם חוקי כדורסל, טכניקות משחק, ושאלות כלליות על הספורט הזה. מה תרצה לדעת?
+                            </div>
+                            <div class="message-time">ממש עכשיו</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Typing Indicator -->
+                <div id="typing-indicator" class="message bot-message" style="display: none;">
+                    <div class="message-avatar">
+                        <i class="fas fa-robot"></i>
+                    </div>
+                    <div class="message-content">
+                        <div class="message-bubble typing-bubble">
+                            <div class="typing-animation">
+                                <span></span>
+                                <span></span>
+                                <span></span>
+                            </div>
+                            הבוט כותב...
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Chat Input -->
+            <div class="card-footer bg-light">
+                <form id="chat-form" class="d-flex align-items-center gap-3">
+                    <div class="flex-grow-1">
+                        <div class="input-group">
+                            <span class="input-group-text bg-white border-end-0">
+                                <i class="fas fa-comment text-muted"></i>
+                            </span>
+                            <input type="text" id="chat-input" class="form-control border-start-0" 
+                                   placeholder="שאל אותי על כדורסל..." autocomplete="off">
+                        </div>
+                    </div>
+                    <button type="submit" id="send-btn" class="btn btn-primary px-4">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </form>
+                
+                <!-- Quick Questions -->
+                <div class="quick-questions mt-3">
+                    <small class="text-muted">שאלות מהירות:</small>
+                    <div class="quick-questions-buttons mt-2">
+                        <button class="btn btn-outline-secondary btn-sm quick-q" data-q="מה זה פאול אישי?">פאול אישי</button>
+                        <button class="btn btn-outline-secondary btn-sm quick-q" data-q="מהם חוקי הזמן במשחק?">חוקי זמן</button>
+                        <button class="btn btn-outline-secondary btn-sm quick-q" data-q="איך עובדת הגנת איזור?">הגנת איזור</button>
+                        <button class="btn btn-outline-secondary btn-sm quick-q" data-q="מה ההבדל בין NBA לFIBA?">NBA vs FIBA</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Info Card -->
+        <div class="card mt-4 border-info">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <h6 class="mb-2">
+                            <i class="fas fa-info-circle me-2 text-info"></i>
+                            על הצ'אטבוט
+                        </h6>
+                        <p class="mb-0 small text-muted">
+                            הצ'אטבוט מבוסס על בינה מלאכותית ומכיר את חוקי כדורסל של FIBA ו-NBA.
+                            הוא יכול לענות על שאלות בעברית ובאנגלית.
+                        </p>
+                    </div>
+                    <div class="col-md-4 text-center">
+                        <button id="clear-chat" class="btn btn-outline-danger btn-sm">
+                            <i class="fas fa-trash me-2"></i>נקה שיחה
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/chatbot.js') }}"></script>
+{% endblock %}

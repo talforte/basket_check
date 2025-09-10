@@ -1,0 +1,418 @@
+{% extends "base.html" %}
+
+{% block title %}ניהול משחקים - Basket Check{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/manage_games.css') }}">
+
+<div class="row">
+    <div class="col-12">
+        <!-- Header Section -->
+        <div class="management-header mb-4">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h1 class="display-6 fw-bold text-white">
+                        <i class="fas fa-cogs me-3"></i>
+                        ניהול משחקים
+                    </h1>
+                    <p class="lead text-white-50 mb-0">
+                        נהל, ערוך ועקוב אחר המשחקים שיצרת
+                    </p>
+                </div>
+                <div class="col-md-4 text-end">
+                    <a href="{{ url_for('create_game') }}" class="btn btn-light btn-lg">
+                        <i class="fas fa-plus me-2"></i>משחק חדש
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Statistics Overview -->
+<div class="row mb-4">
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="stat-card bg-primary">
+            <div class="stat-icon">
+                <i class="fas fa-calendar-check"></i>
+            </div>
+            <div class="stat-content">
+                <div class="stat-number">{{ games|length }}</div>
+                <div class="stat-label">סה"כ משחקים</div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="stat-card bg-success">
+            <div class="stat-icon">
+                <i class="fas fa-play"></i>
+            </div>
+            <div class="stat-content">
+                {% set active_games = games|selectattr('status', 'equalto', 'open')|list %}
+                <div class="stat-number">{{ active_games|length }}</div>
+                <div class="stat-label">פעילים</div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="stat-card bg-warning">
+            <div class="stat-icon">
+                <i class="fas fa-users"></i>
+            </div>
+            <div class="stat-content">
+                {% set total_registrations = games|sum(attribute='registrations_count') %}
+                <div class="stat-number">{{ total_registrations }}</div>
+                <div class="stat-label">הרשמות</div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="stat-card bg-info">
+            <div class="stat-icon">
+                <i class="fas fa-percentage"></i>
+            </div>
+            <div class="stat-content">
+                {% if games|length > 0 %}
+                    {% set avg_fill = (total_registrations / (games|length * 9) * 100)|round %}
+                {% else %}
+                    {% set avg_fill = 0 %}
+                {% endif %}
+                <div class="stat-number">{{ avg_fill }}%</div>
+                <div class="stat-label">תפוסה ממוצעת</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Filters and Search -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <div class="row g-3 align-items-end">
+                    <div class="col-md-4">
+                        <label for="searchGames" class="form-label fw-bold">חיפוש משחקים</label>
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="fas fa-search"></i>
+                            </span>
+                            <input type="text" class="form-control" id="searchGames" 
+                                   placeholder="חפש לפי כותרת או מיקום...">
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-2">
+                        <label for="statusFilter" class="form-label fw-bold">סטטוס</label>
+                        <select class="form-select" id="statusFilter">
+                            <option value="">הכל</option>
+                            <option value="open">פתוח</option>
+                            <option value="closed">סגור</option>
+                            <option value="cancelled">בוטל</option>
+                            <option value="completed">הסתיים</option>
+                        </select>
+                    </div>
+                    
+                    <div class="col-md-2">
+                        <label for="dateRangeFilter" class="form-label fw-bold">טווח תאריכים</label>
+                        <select class="form-select" id="dateRangeFilter">
+                            <option value="">הכל</option>
+                            <option value="today">היום</option>
+                            <option value="week">השבוע</option>
+                            <option value="month">החודש</option>
+                            <option value="future">עתידיים</option>
+                            <option value="past">עברו</option>
+                        </select>
+                    </div>
+                    
+                    <div class="col-md-2">
+                        <label for="sortBy" class="form-label fw-bold">מיון לפי</label>
+                        <select class="form-select" id="sortBy">
+                            <option value="date_desc">תאריך (חדש למטה)</option>
+                            <option value="date_asc">תאריך (ישן למטה)</option>
+                            <option value="registrations_desc">הרשמות (רב לפט)</option>
+                            <option value="title_asc">כותרת (א-ת)</option>
+                        </select>
+                    </div>
+                    
+                    <div class="col-md-2">
+                        <button class="btn btn-outline-secondary w-100" id="clearFilters">
+                            <i class="fas fa-times me-1"></i>נקה
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Games Management Table -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="fas fa-table me-2"></i>
+                    המשחקים שלי
+                </h5>
+                <div class="view-toggle">
+                    <div class="btn-group" role="group">
+                        <input type="radio" class="btn-check" name="viewMode" id="tableView" checked>
+                        <label class="btn btn-outline-primary" for="tableView">
+                            <i class="fas fa-table"></i>
+                        </label>
+                        
+                        <input type="radio" class="btn-check" name="viewMode" id="cardView">
+                        <label class="btn btn-outline-primary" for="cardView">
+                            <i class="fas fa-th-large"></i>
+                        </label>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body p-0">
+                {% if games %}
+                    <!-- Table View -->
+                    <div id="tableViewContainer" class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>משחק</th>
+                                    <th>תאריך ושעה</th>
+                                    <th>מיקום</th>
+                                    <th>הרשמות</th>
+                                    <th>סטטוס</th>
+                                    <th>פעולות</th>
+                                </tr>
+                            </thead>
+                            <tbody id="gamesTableBody">
+                                {% for game in games %}
+                                    <tr class="game-row" 
+                                        data-title="{{ game.title|lower }}" 
+                                        data-location="{{ game.location|lower }}"
+                                        data-date="{{ game.game_date }}"
+                                        data-status="{{ game.status }}"
+                                        data-registrations="{{ game.registrations_count }}">
+                                        <td>
+                                            <div class="game-info">
+                                                <h6 class="mb-1 fw-bold">{{ game.title }}</h6>
+                                                {% if game.description %}
+                                                    <small class="text-muted">{{ game.description[:50] }}...</small>
+                                                {% endif %}
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="datetime-info">
+                                                <div class="fw-bold">{{ game.game_date|datetime }}</div>
+                                                <small class="text-muted">{{ game.game_time|time }}</small>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <small class="text-muted">{{ game.location }}</small>
+                                        </td>
+                                        <td>
+                                            <div class="registration-info">
+                                                <span class="badge bg-primary mb-1">{{ game.registrations_count }}/{{ game.max_players + 4 }}</span>
+                                                <div class="progress" style="height: 4px; width: 80px;">
+                                                    {% set fill_percent = (game.registrations_count / (game.max_players + 4) * 100)|round %}
+                                                    <div class="progress-bar" style="width: {{ fill_percent }}%"></div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span class="badge 
+                                                {% if game.status == 'open' %}bg-success
+                                                {% elif game.status == 'closed' %}bg-warning
+                                                {% elif game.status == 'cancelled' %}bg-danger
+                                                {% else %}bg-info{% endif %}">
+                                                {% if game.status == 'open' %}פתוח
+                                                {% elif game.status == 'closed' %}סגור  
+                                                {% elif game.status == 'cancelled' %}בוטל
+                                                {% else %}{{ game.status }}{% endif %}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <div class="btn-group btn-group-sm" role="group">
+                                                <a href="{{ url_for('game_detail', game_id=game.game_id) }}" 
+                                                   class="btn btn-outline-primary" title="צפה">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                                <button class="btn btn-outline-info participants-btn" 
+                                                        data-game-id="{{ game.game_id }}"
+                                                        data-game-title="{{ game.title }}" title="משתתפים">
+                                                    <i class="fas fa-users"></i>
+                                                </button>
+                                                {% if game.status != 'cancelled' and game.status != 'completed' %}
+                                                    <button class="btn btn-outline-warning edit-btn" 
+                                                            data-game-id="{{ game.game_id }}" title="ערוך">
+                                                        <i class="fas fa-edit"></i>
+                                                    </button>
+                                                    {% if game.status == 'open' %}
+                                                        <button class="btn btn-outline-secondary close-btn" 
+                                                                data-game-id="{{ game.game_id }}"
+                                                                data-game-title="{{ game.title }}" title="סגור הרשמות">
+                                                            <i class="fas fa-lock"></i>
+                                                        </button>
+                                                    {% endif %}
+                                                    <button class="btn btn-outline-danger cancel-btn" 
+                                                            data-game-id="{{ game.game_id }}"
+                                                            data-game-title="{{ game.title }}" title="בטל משחק">
+                                                        <i class="fas fa-times"></i>
+                                                    </button>
+                                                {% endif %}
+                                            </div>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- Card View -->
+                    <div id="cardViewContainer" class="d-none p-3">
+                        <div class="row" id="gamesCardContainer">
+                            {% for game in games %}
+                                <div class="col-lg-4 col-md-6 mb-4 game-card-item" 
+                                     data-title="{{ game.title|lower }}" 
+                                     data-location="{{ game.location|lower }}"
+                                     data-date="{{ game.game_date }}"
+                                     data-status="{{ game.status }}"
+                                     data-registrations="{{ game.registrations_count }}">
+                                    <div class="card game-management-card">
+                                        <div class="card-header d-flex justify-content-between align-items-start">
+                                            <h6 class="mb-0 fw-bold">{{ game.title }}</h6>
+                                            <span class="badge 
+                                                {% if game.status == 'open' %}bg-success
+                                                {% elif game.status == 'closed' %}bg-warning
+                                                {% elif game.status == 'cancelled' %}bg-danger
+                                                {% else %}bg-info{% endif %}">
+                                                {% if game.status == 'open' %}פתוח
+                                                {% elif game.status == 'closed' %}סגור  
+                                                {% elif game.status == 'cancelled' %}בוטל
+                                                {% else %}{{ game.status }}{% endif %}
+                                            </span>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="game-details mb-3">
+                                                <div class="detail-row">
+                                                    <i class="fas fa-calendar text-primary"></i>
+                                                    <span>{{ game.game_date|datetime }}</span>
+                                                </div>
+                                                <div class="detail-row">
+                                                    <i class="fas fa-clock text-warning"></i>
+                                                    <span>{{ game.game_time|time }}</span>
+                                                </div>
+                                                <div class="detail-row">
+                                                    <i class="fas fa-map-marker-alt text-danger"></i>
+                                                    <span>{{ game.location }}</span>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="registration-stats mb-3">
+                                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                                    <span class="small fw-bold">הרשמות</span>
+                                                    <span class="badge bg-primary">{{ game.registrations_count }}/{{ game.max_players + 4 }}</span>
+                                                </div>
+                                                <div class="progress" style="height: 6px;">
+                                                    {% set fill_percent = (game.registrations_count / (game.max_players + 4) * 100)|round %}
+                                                    <div class="progress-bar" style="width: {{ fill_percent }}%"></div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="card-footer bg-transparent">
+                                            <div class="d-grid gap-1">
+                                                <div class="btn-group" role="group">
+                                                    <a href="{{ url_for('game_detail', game_id=game.game_id) }}" 
+                                                       class="btn btn-outline-primary btn-sm">
+                                                        <i class="fas fa-eye"></i>
+                                                    </a>
+                                                    <button class="btn btn-outline-info btn-sm participants-btn" 
+                                                            data-game-id="{{ game.game_id }}"
+                                                            data-game-title="{{ game.title }}">
+                                                        <i class="fas fa-users"></i>
+                                                    </button>
+                                                    {% if game.status != 'cancelled' and game.status != 'completed' %}
+                                                        <button class="btn btn-outline-warning btn-sm edit-btn" 
+                                                                data-game-id="{{ game.game_id }}">
+                                                            <i class="fas fa-edit"></i>
+                                                        </button>
+                                                        <button class="btn btn-outline-danger btn-sm cancel-btn" 
+                                                                data-game-id="{{ game.game_id }}"
+                                                                data-game-title="{{ game.title }}">
+                                                            <i class="fas fa-times"></i>
+                                                        </button>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="empty-state text-center py-5">
+                        <i class="fas fa-calendar-plus text-muted mb-3" style="font-size: 4rem;"></i>
+                        <h4 class="text-muted">עדיין לא יצרת משחקים</h4>
+                        <p class="text-muted mb-4">בואו ניצור את המשחק הראשון שלך!</p>
+                        <a href="{{ url_for('create_game') }}" class="btn btn-primary btn-lg">
+                            <i class="fas fa-plus me-2"></i>יצור משחק חדש
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Participants Modal -->
+<div class="modal fade" id="participantsModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">משתתפים במשחק: <span id="modalGameTitle"></span></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="participantsList">
+                    <!-- Will be populated by JavaScript -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">סגור</button>
+                <button type="button" class="btn btn-primary" id="exportParticipants">
+                    <i class="fas fa-download me-2"></i>יצא לרשימה
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Cancel Game Modal -->
+<div class="modal fade" id="cancelGameModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">ביטול משחק</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>האם אתה בטוח שברצונך לבטל את המשחק <strong id="cancelGameTitle"></strong>?</p>
+                <p class="text-warning small">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    פעולה זו תישלח הודעה לכל המשתתפים ולא ניתן לבטלה
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">חזור</button>
+                <button type="button" class="btn btn-danger" id="confirmCancelGame">
+                    <i class="fas fa-times me-2"></i>בטל משחק
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/manage_games.js') }}"></script>
+{% endblock %}

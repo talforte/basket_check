@@ -1,0 +1,167 @@
+{% extends "base.html" %}
+
+{% block title %}הרשמה - Basket Check{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/register.css') }}">
+
+<div class="row justify-content-center">
+    <div class="col-lg-6 col-md-8">
+        <div class="card shadow-lg border-0">
+            <div class="card-header bg-success text-white text-center py-4">
+                <h2 class="mb-0">
+                    <i class="fas fa-user-plus me-3"></i>
+                    הצטרפות ל-Basket Check
+                </h2>
+                <p class="mb-0 mt-2">צור חשבון חדש והתחל לשחק!</p>
+            </div>
+            <div class="card-body p-5">
+                <form method="POST" action="{{ url_for('register') }}" id="registerForm">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="first_name" class="form-label fw-bold">
+                                <i class="fas fa-user me-2 text-primary"></i>שם פרטי
+                            </label>
+                            <input type="text" class="form-control" id="first_name" name="first_name" 
+                                   required placeholder="שם פרטי" value="{{ request.form.first_name or '' }}">
+                            <div class="invalid-feedback">אנא הכנס שם פרטי</div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="last_name" class="form-label fw-bold">
+                                <i class="fas fa-user me-2 text-primary"></i>שם משפחה
+                            </label>
+                            <input type="text" class="form-control" id="last_name" name="last_name" 
+                                   required placeholder="שם משפחה" value="{{ request.form.last_name or '' }}">
+                            <div class="invalid-feedback">אנא הכנס שם משפחה</div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="username" class="form-label fw-bold">
+                            <i class="fas fa-at me-2 text-primary"></i>שם משתמש
+                        </label>
+                        <input type="text" class="form-control" id="username" name="username" 
+                               required placeholder="בחר שם משתמש ייחודי" value="{{ request.form.username or '' }}">
+                        <div class="form-text">השם יהיה גלוי לשחקנים אחרים</div>
+                        <div class="invalid-feedback">שם המשתמש חייב להכיל לפחות 3 תווים</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="email" class="form-label fw-bold">
+                            <i class="fas fa-envelope me-2 text-primary"></i>כתובת אימייל
+                        </label>
+                        <input type="email" class="form-control" id="email" name="email" 
+                               required placeholder="example@email.com" value="{{ request.form.email or '' }}">
+                        <div class="form-text">לא נשתף את האימייל שלך עם אחרים</div>
+                        <div class="invalid-feedback">אנא הכנס אימייל תקין</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="phone" class="form-label fw-bold">
+                            <i class="fas fa-phone me-2 text-primary"></i>מספר טלפון (אופציונלי)
+                        </label>
+                        <input type="tel" class="form-control" id="phone" name="phone" 
+                               placeholder="05X-XXXXXXX" value="{{ request.form.phone or '' }}">
+                        <div class="form-text">לתיאום ועדכונים על המשחקים</div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="password" class="form-label fw-bold">
+                                <i class="fas fa-lock me-2 text-primary"></i>סיסמה
+                            </label>
+                            <div class="input-group">
+                                <input type="password" class="form-control" id="password" name="password" 
+                                       required placeholder="לפחות 6 תווים">
+                                <button class="btn btn-outline-secondary" type="button" id="togglePassword">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                            <div class="password-strength mt-2">
+                                <div class="progress" style="height: 4px;">
+                                    <div class="progress-bar" id="passwordStrength" role="progressbar" style="width: 0%"></div>
+                                </div>
+                                <small class="text-muted" id="passwordStrengthText">בחר סיסמה חזקה</small>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="confirm_password" class="form-label fw-bold">
+                                <i class="fas fa-lock me-2 text-primary"></i>אישור סיסמה
+                            </label>
+                            <input type="password" class="form-control" id="confirm_password" name="confirm_password" 
+                                   required placeholder="הכנס שוב את הסיסמה">
+                            <div class="invalid-feedback">הסיסמאות אינן תואמות</div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="acceptTerms" required>
+                            <label class="form-check-label" for="acceptTerms">
+                                אני מסכים ל<a href="#" class="text-decoration-none">תנאי השימוש</a> ול<a href="#" class="text-decoration-none">מדיניות הפרטיות</a>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="newsletter">
+                            <label class="form-check-label" for="newsletter">
+                                רוצה לקבל עדכונים על משחקים חדשים באימייל
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-success btn-lg w-100 mb-3" id="submitBtn">
+                        <i class="fas fa-user-plus me-2"></i>
+                        צור חשבון
+                    </button>
+                </form>
+                
+                <hr class="my-4">
+                
+                <div class="text-center">
+                    <p class="text-muted mb-3">כבר יש לך חשבון?</p>
+                    <a href="{{ url_for('login') }}" class="btn btn-outline-primary btn-lg">
+                        <i class="fas fa-sign-in-alt me-2"></i>
+                        התחבר כאן
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Benefits Card -->
+        <div class="card mt-4 border-info">
+            <div class="card-header bg-info text-white">
+                <h6 class="mb-0">
+                    <i class="fas fa-star me-2"></i>
+                    למה לבחור ב-Basket Check?
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4 text-center mb-3">
+                        <i class="fas fa-calendar-check text-success mb-2" style="font-size: 2rem;"></i>
+                        <h6>ארגון קל</h6>
+                        <small class="text-muted">הירשם למשחקים בקליק</small>
+                    </div>
+                    <div class="col-md-4 text-center mb-3">
+                        <i class="fas fa-users text-primary mb-2" style="font-size: 2rem;"></i>
+                        <h6>קהילה פעילה</h6>
+                        <small class="text-muted">פגוש שחקנים חדשים</small>
+                    </div>
+                    <div class="col-md-4 text-center mb-3">
+                        <i class="fas fa-chart-line text-warning mb-2" style="font-size: 2rem;"></i>
+                        <h6>מעקב התקדמות</h6>
+                        <small class="text-muted">עקוב אחר הפעילות שלך</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/register.js') }}"></script>
+{% endblock %}

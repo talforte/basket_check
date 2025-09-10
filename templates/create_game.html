@@ -1,0 +1,267 @@
+{% extends "base.html" %}
+
+{% block title %}יצירת משחק חדש - Basket Check{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/create-game.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <!-- Header -->
+        <div class="create-game-header mb-4">
+            <div class="text-center">
+                <h1 class="display-6 fw-bold text-white">
+                    <i class="fas fa-plus-circle me-3"></i>
+                    יצירת משחק חדש
+                </h1>
+                <p class="lead text-white-50 mb-0">
+                    צור חוויית כדורסל מושלמת לקהילה שלך
+                </p>
+            </div>
+        </div>
+        
+        <!-- Form Card -->
+        <div class="card shadow-lg border-0">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-basketball-ball me-2"></i>
+                    פרטי המשחק
+                </h5>
+            </div>
+            <div class="card-body p-4">
+                <form method="POST" action="{{ url_for('create_game') }}" id="createGameForm">
+                    <!-- Basic Info Section -->
+                    <div class="section mb-4">
+                        <h6 class="section-title">
+                            <i class="fas fa-info-circle me-2"></i>
+                            מידע בסיסי
+                        </h6>
+                        
+                        <div class="row">
+                            <div class="col-md-8 mb-3">
+                                <label for="title" class="form-label fw-bold">
+                                    <i class="fas fa-tag me-2 text-primary"></i>כותרת המשחק *
+                                </label>
+                                <input type="text" class="form-control" id="title" name="title" 
+                                       required placeholder="למשל: משחק כדורסל ערב חמישי"
+                                       value="{{ request.form.title or '' }}">
+                                <div class="form-text">בחר כותרת אטרקטיבית שתמשך משתתפים</div>
+                                <div class="invalid-feedback">אנא הכנס כותרת למשחק</div>
+                            </div>
+                            
+                            <div class="col-md-4 mb-3">
+                                <label for="max_players" class="form-label fw-bold">
+                                    <i class="fas fa-users me-2 text-success"></i>מספר שחקנים מקסימלי
+                                </label>
+                                <select class="form-select" id="max_players" name="max_players">
+                                    <option value="10" {% if request.form.max_players == '10' %}selected{% endif %}>10 שחקנים</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="description" class="form-label fw-bold">
+                                <i class="fas fa-align-left me-2 text-info"></i>תיאור המשחק
+                            </label>
+                            <textarea class="form-control" id="description" name="description" rows="3"
+                                      placeholder="תאר את המשחק, הרמה הנדרשת, ציוד מיוחד וכו'...">{{ request.form.description or '' }}</textarea>
+                            <div class="form-text">תיאור יעזור לשחקנים להבין אם המשחק מתאים להם</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Date & Time Section -->
+                    <div class="section mb-4">
+                        <h6 class="section-title">
+                            <i class="fas fa-calendar-alt me-2"></i>
+                            זמן ותאריך
+                        </h6>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="game_date" class="form-label fw-bold">
+                                    <i class="fas fa-calendar me-2 text-primary"></i>תאריך המשחק *
+                                </label>
+                                <input type="date" class="form-control" id="game_date" name="game_date" 
+                                       required value="{{ request.form.game_date or '' }}">
+                                <div class="invalid-feedback">אנא בחר תאריך תקין</div>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="game_time" class="form-label fw-bold">
+                                    <i class="fas fa-clock me-2 text-warning"></i>שעת התחלה *
+                                </label>
+                                <input type="time" class="form-control" id="game_time" name="game_time" 
+                                       required value="{{ request.form.game_time or '' }}">
+                                <div class="invalid-feedback">אנא בחר שעה תקינה</div>
+                            </div>
+                        </div>
+                        
+                        <!-- Quick Time Buttons -->
+                        <div class="quick-times mb-3">
+                            <label class="form-label fw-bold">שעות פופולריות:</label>
+                            <div class="btn-group flex-wrap" role="group">
+                                <button type="button" class="btn btn-outline-secondary btn-sm time-btn" data-time="18:00">18:00</button>
+                                <button type="button" class="btn btn-outline-secondary btn-sm time-btn" data-time="19:00">19:00</button>
+                                <button type="button" class="btn btn-outline-secondary btn-sm time-btn" data-time="20:00">20:00</button>
+                                <button type="button" class="btn btn-outline-secondary btn-sm time-btn" data-time="21:00">21:00</button>
+                                <button type="button" class="btn btn-outline-secondary btn-sm time-btn" data-time="10:00">10:00</button>
+                                <button type="button" class="btn btn-outline-secondary btn-sm time-btn" data-time="16:00">16:00</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Location Section -->
+                    <div class="section mb-4">
+                        <h6 class="section-title">
+                            <i class="fas fa-map-marker-alt me-2"></i>
+                            מיקום
+                        </h6>
+                        
+                        <div class="mb-3">
+                            <label for="location" class="form-label fw-bold">
+                                <i class="fas fa-building me-2 text-danger"></i>מיקום המשחק *
+                            </label>
+                            <input type="text" class="form-control" id="location" name="location" 
+                                   required placeholder="למשל: מתחם ספורט רמת גן, רחוב הגפן 12"
+                                   value="{{ request.form.location or '' }}">
+                            <div class="invalid-feedback">אנא הכנס מיקום למשחק</div>
+                        </div>
+                        
+                        <!-- Popular Locations -->
+                        <div class="popular-locations">
+                            <label class="form-label fw-bold">מיקומים פופולריים:</label>
+                            <div class="locations-grid">
+                                <button type="button" class="btn btn-outline-info btn-sm location-btn" 
+                                        data-location="מתחם ספורט רמת גן">מתחם ספורט רמת גן</button>
+                                <button type="button" class="btn btn-outline-info btn-sm location-btn" 
+                                        data-location="מגרש כדורסל פארק הירקון">פארק הירקון</button>
+                                <button type="button" class="btn btn-outline-info btn-sm location-btn" 
+                                        data-location="מרכז ספורט הפועל תל אביב">הפועל ת"א</button>
+                                <button type="button" class="btn btn-outline-info btn-sm location-btn" 
+                                        data-location="מתחם ספורט אוניברסיטת תל אביב">אונ' תל אביב</button>
+                                <button type="button" class="btn btn-outline-info btn-sm location-btn" 
+                                        data-location="מגרש רמת השרון">רמת השרון</button>
+                                <button type="button" class="btn btn-outline-info btn-sm location-btn" 
+                                        data-location="מרכז קהילתי גבעתיים">גבעתיים</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Preview Section -->
+                    <div class="section mb-4">
+                        <h6 class="section-title">
+                            <i class="fas fa-eye me-2"></i>
+                            תצוגה מקדימה
+                        </h6>
+                        
+                        <div class="game-preview card border-success">
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-8">
+                                        <h5 class="card-title preview-title">כותרת המשחק תופיע כאן</h5>
+                                        <div class="preview-details">
+                                            <div class="detail-item">
+                                                <i class="fas fa-calendar text-primary"></i>
+                                                <span class="preview-date">תאריך יופיע כאן</span>
+                                            </div>
+                                            <div class="detail-item">
+                                                <i class="fas fa-clock text-warning"></i>
+                                                <span class="preview-time">שעה תופיע כאן</span>
+                                            </div>
+                                            <div class="detail-item">
+                                                <i class="fas fa-map-marker-alt text-danger"></i>
+                                                <span class="preview-location">מיקום יופיע כאן</span>
+                                            </div>
+                                            <div class="detail-item">
+                                                <i class="fas fa-user text-info"></i>
+                                                <span>{{ current_user.first_name }}</span>
+                                            </div>
+                                        </div>
+                                        <p class="card-text preview-description mt-2">תיאור המשחק יופיע כאן...</p>
+                                    </div>
+                                    <div class="col-md-4 text-center">
+                                        <div class="preview-stats">
+                                            <div class="stat-item">
+                                                <div class="stat-number">0</div>
+                                                <div class="stat-label">נרשמו</div>
+                                            </div>
+                                            <div class="stat-item">
+                                                <div class="stat-number preview-max-players">10</div>
+                                                <div class="stat-label">מקומות</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Submit Section -->
+                    <div class="section">
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a href="{{ url_for('dashboard') }}" class="btn btn-outline-secondary btn-lg me-md-2">
+                                <i class="fas fa-times me-2"></i>ביטול
+                            </a>
+                            <button type="submit" class="btn btn-success btn-lg" id="submitBtn">
+                                <i class="fas fa-plus me-2"></i>צור משחק
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Help Card -->
+        <div class="card mt-4 border-info">
+            <div class="card-header bg-info text-white">
+                <h6 class="mb-0">
+                    <i class="fas fa-question-circle me-2"></i>
+                    טיפים ליצירת משחק מושלם
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <ul class="list-unstyled">
+                            <li class="mb-2">
+                                <i class="fas fa-check text-success me-2"></i>
+                                בחר כותרת ברורה ואטרקטיבית
+                            </li>
+                            <li class="mb-2">
+                                <i class="fas fa-check text-success me-2"></i>
+                                ציין את רמת המשחק (מתחילים/מתקדמים)
+                            </li>
+                            <li class="mb-2">
+                                <i class="fas fa-check text-success me-2"></i>
+                                הוסף פרטי קשר במידת הצורך
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <ul class="list-unstyled">
+                            <li class="mb-2">
+                                <i class="fas fa-check text-success me-2"></i>
+                                וודא שהמיקום נגיש בתחבורה ציבורית
+                            </li>
+                            <li class="mb-2">
+                                <i class="fas fa-check text-success me-2"></i>
+                                בחר שעות נוחות לרוב השחקנים
+                            </li>
+                            <li class="mb-2">
+                                <i class="fas fa-check text-success me-2"></i>
+                                ציין אם יש צורך בציוד מיוחד
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/create-game.js') }}"></script>
+{% endblock %}

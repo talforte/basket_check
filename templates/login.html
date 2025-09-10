@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+
+{% block title %}התחברות - Basket Check{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}">
+
+<div class="row justify-content-center">
+    <div class="col-lg-5 col-md-7">
+        <div class="card shadow-lg border-0">
+            <div class="card-header bg-primary text-white text-center py-4">
+                <h2 class="mb-0">
+                    <i class="fas fa-sign-in-alt me-3"></i>
+                    התחברות למערכת
+                </h2>
+            </div>
+            <div class="card-body p-5">
+                <form method="POST" action="{{ url_for('login') }}" id="loginForm">
+                    <div class="mb-4">
+                        <label for="username" class="form-label fw-bold">
+                            <i class="fas fa-user me-2 text-primary"></i>שם משתמש
+                        </label>
+                        <input type="text" class="form-control form-control-lg" id="username" name="username" 
+                               required placeholder="הכנס שם משתמש">
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="password" class="form-label fw-bold">
+                            <i class="fas fa-lock me-2 text-primary"></i>סיסמה
+                        </label>
+                        <div class="input-group">
+                            <input type="password" class="form-control form-control-lg" id="password" name="password" 
+                                   required placeholder="הכנס סיסמה">
+                            <button class="btn btn-outline-secondary" type="button" id="togglePassword">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="rememberMe">
+                            <label class="form-check-label" for="rememberMe">
+                                זכור אותי
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary btn-lg w-100 mb-3">
+                        <i class="fas fa-sign-in-alt me-2"></i>
+                        התחבר
+                    </button>
+                </form>
+                
+                <hr class="my-4">
+                
+                <div class="text-center">
+                    <p class="text-muted mb-3">עדיין אין לך חשבון?</p>
+                    <a href="{{ url_for('register') }}" class="btn btn-outline-success btn-lg">
+                        <i class="fas fa-user-plus me-2"></i>
+                        צור חשבון חדש
+                    </a>
+                </div>
+                
+                <div class="text-center mt-4">
+                    <small class="text-muted">
+                        <i class="fas fa-info-circle me-1"></i>
+                        לבעיות התחברות, פנה למנהל המערכת
+                    </small>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Demo Accounts Info -->
+        <div class="card mt-4 border-warning">
+            <div class="card-header bg-warning text-dark">
+                <h6 class="mb-0">
+                    <i class="fas fa-key me-2"></i>
+                    חשבונות לדוגמה
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-6">
+                        <strong>מנהל:</strong><br>
+                        <small>שם משתמש: admin</small><br>
+                        <small>סיסמה: admin123</small>
+                    </div>
+                    <div class="col-6">
+                        <strong>שחקן:</strong><br>
+                        <small>צור חשבון חדש</small><br>
+                        <small>או השתמש בחשבון קיים</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/login.js') }}"></script>
+{% endblock %}

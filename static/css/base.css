@@ -1,0 +1,186 @@
+/* Base Styles */
+body {
+    font-family: 'Heebo', Arial, sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+}
+
+/* Navbar */
+.navbar {
+    background: rgba(255, 255, 255, 0.95) !important;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 2px 20px rgba(0,0,0,0.1);
+}
+
+.navbar-brand {
+    font-weight: 700;
+    font-size: 1.5rem;
+}
+
+/* Cards */
+.card {
+    border: none;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 40px rgba(0,0,0,0.15);
+}
+
+/* Buttons */
+.btn-primary {
+    background: linear-gradient(45deg, #4CAF50, #45a049);
+    border: none;
+    border-radius: 25px;
+    padding: 10px 25px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+    background: linear-gradient(45deg, #45a049, #4CAF50);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(76, 175, 80, 0.4);
+}
+
+.btn-success {
+    background: linear-gradient(45deg, #FF9800, #F57C00);
+    border: none;
+    border-radius: 25px;
+}
+
+.btn-danger {
+    background: linear-gradient(45deg, #f44336, #d32f2f);
+    border: none;
+    border-radius: 25px;
+}
+
+/* Content Wrapper */
+.content-wrapper {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 20px;
+    padding: 30px;
+    margin: 20px 0;
+    backdrop-filter: blur(10px);
+}
+
+/* Basketball Court */
+.basketball-court {
+    background: #8B4513;
+    border: 3px solid #654321;
+    border-radius: 15px;
+    position: relative;
+    aspect-ratio: 2;
+    margin: 20px 0;
+}
+
+.court-line {
+    border: 2px solid white;
+    position: absolute;
+}
+
+/* Position Spots */
+.position-spot {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    position: absolute;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: bold;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.position-spot.available {
+    background: rgba(76, 175, 80, 0.8);
+    border: 2px solid #4CAF50;
+}
+
+.position-spot.taken {
+    background: rgba(244, 67, 54, 0.8);
+    border: 2px solid #f44336;
+}
+
+.position-spot:hover {
+    transform: scale(1.1);
+    z-index: 10;
+}
+
+/* Alerts */
+.alert {
+    border: none;
+    border-radius: 15px;
+    margin-bottom: 20px;
+}
+
+/* Footer */
+.footer {
+    background: rgba(52, 58, 64, 0.95);
+    color: white;
+    text-align: center;
+    padding: 20px 0;
+    margin-top: 50px;
+}
+
+/* Game Cards */
+.game-card {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 20px;
+    padding: 25px;
+    margin: 15px 0;
+    position: relative;
+    overflow: hidden;
+}
+
+.game-card::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -50%;
+    width: 200%;
+    height: 200%;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="40" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="0.5"/></svg>');
+    animation: rotate 20s linear infinite;
+}
+
+@keyframes rotate {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* Stats Cards */
+.stats-card {
+    background: linear-gradient(135deg, #FF9800 0%, #F57C00 100%);
+    color: white;
+    border-radius: 15px;
+    padding: 20px;
+    text-align: center;
+}
+
+.stats-number {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 5px;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+    .position-spot {
+        width: 30px;
+        height: 30px;
+        font-size: 10px;
+    }
+    
+    .content-wrapper {
+        padding: 15px;
+        margin: 10px 0;
+    }
+}

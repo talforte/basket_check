@@ -1,0 +1,112 @@
+/* Index Page Styles */
+
+/* Game Cards */
+.game-card-hover {
+    transition: all 0.3s ease;
+    border: none;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.game-card-hover:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+}
+
+/* Progress Bars */
+.progress {
+    border-radius: 10px;
+    background-color: #e9ecef;
+}
+
+.progress-bar {
+    border-radius: 10px;
+    background: linear-gradient(45deg, #4CAF50, #45a049);
+}
+
+/* Statistics Cards */
+.stats-card {
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    color: white;
+    padding: 20px;
+    border-radius: 15px;
+    text-align: center;
+    margin-bottom: 15px;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+    animation: fadeInUp 0.6s ease-out;
+}
+
+.stats-number {
+    font-size: 2.5rem;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+/* Animations */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Card Footer */
+.card-footer {
+    border-top: 1px solid rgba(0,0,0,0.05);
+}
+
+/* Badges */
+.badge {
+    font-size: 0.7rem;
+    padding: 0.4em 0.6em;
+}
+
+/* Features Section Icons */
+.features-icon {
+    font-size: 3rem;
+    transition: transform 0.3s ease;
+}
+
+.features-icon:hover {
+    transform: scale(1.1);
+}
+
+/* Hero Section */
+.hero-section {
+    padding: 60px 0;
+    text-align: center;
+}
+
+.hero-title {
+    font-size: 3.5rem;
+    font-weight: bold;
+    margin-bottom: 1.5rem;
+}
+
+.hero-subtitle {
+    font-size: 1.25rem;
+    color: #6c757d;
+    margin-bottom: 2rem;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .stats-number {
+        font-size: 2rem;
+    }
+    
+    .hero-title {
+        font-size: 2.5rem;
+    }
+    
+    .hero-subtitle {
+        font-size: 1.1rem;
+    }
+    
+    .features-icon {
+        font-size: 2.5rem;
+    }
+}
